@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+VERSION=4.3.21~20170330
+
+%:
+	dh $@ --with dkms
+
+override_dh_dkms:
+	dh_dkms -V $(VERSION)
+
+override_dh_fixperms:
+	dh_fixperms
+	find debian/realtek-rtl88xxau-dkms/usr/src -type f -exec chmod -x {} \;
+
+# Nothing to configure, build or auto-install (all is done after
+# installation using dkms)
+override_dh_auto_configure:
+override_dh_auto_build:
+override_dh_auto_install:
