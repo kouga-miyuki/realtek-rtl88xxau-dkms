@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rtl8812au
-Source: https://github.com/astsam/rtl8812au/tree/v4.3.21
+Source: https://github.com/aircrack-ng/rtl8812au
 
 Files: *
 Copyright: 2007-2013 Realtek Corporation

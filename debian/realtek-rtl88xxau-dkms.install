@@ -1,1 +1,1 @@
-clean core hal ifcfg-wlan0 include Kconfig Makefile os_dep platform runwpa wlan0dhcp usr/src/realtek-rtl88xxau-4.3.21~20170330
+clean core hal ifcfg-wlan0 include Kconfig Makefile os_dep platform runwpa wlan0dhcp usr/src/realtek-rtl88xxau-4.3.21~20170824
