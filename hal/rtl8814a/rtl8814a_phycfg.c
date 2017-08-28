@@ -50,7 +50,7 @@ PHY_QueryBBReg8814A(
 	BitShift = PHY_CalculateBitShift(BitMask);
 	ReturnValue = (OriginalValue & BitMask) >> BitShift;
 
-	//DBG_871X("BBR MASK=0x%x Addr[0x%x]=0x%x\n", BitMask, RegAddr, OriginalValue);
+	//RTW_INFO("BBR MASK=0x%x Addr[0x%x]=0x%x\n", BitMask, RegAddr, OriginalValue);
 
 	return (ReturnValue);
 }
@@ -84,7 +84,7 @@ PHY_SetBBReg8814A(
 
 	rtw_write32(Adapter, RegAddr, Data);
 	
-	//DBG_871X("BBW MASK=0x%x Addr[0x%x]=0x%x\n", BitMask, RegAddr, Data);
+	//RTW_INFO("BBW MASK=0x%x Addr[0x%x]=0x%x\n", BitMask, RegAddr, Data);
 }
 
 
@@ -123,7 +123,7 @@ phy_RFRead_8814A(
 	BitMask &= bRFRegOffsetMask;
 	
 	Readback_Value = PHY_QueryBBReg(Adapter, Direct_Addr, BitMask);		
-	//DBG_871X("RFR-%d Addr[0x%x]=0x%x\n", eRFPath, RegAddr, Readback_Value);
+	//RTW_INFO("RFR-%d Addr[0x%x]=0x%x\n", eRFPath, RegAddr, Readback_Value);
 
 	return Readback_Value;
 }
@@ -158,7 +158,7 @@ phy_RFWrite_8814A(
 
 	// Write Operation 
 	PHY_SetBBReg(Adapter, pPhyReg->rf3wireOffset, bMaskDWord, DataAndAddr);
-	//DBG_871X("RFW-%d Addr[0x%x]=0x%x\n", eRFPath, pPhyReg->rf3wireOffset, DataAndAddr);
+	//RTW_INFO("RFW-%d Addr[0x%x]=0x%x\n", eRFPath, pPhyReg->rf3wireOffset, DataAndAddr);
 }
 
 
@@ -222,17 +222,12 @@ s32 PHY_MACConfig8814(PADAPTER Adapter)
 {
 	int				rtStatus = _FAIL;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-	s8				*pszMACRegFile;
-	s8				sz8814MACRegFile[] = RTL8814A_PHY_MACREG;
-
-	pszMACRegFile = sz8814MACRegFile;
-
 
 	//
 	// Config MAC
 	//
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	rtStatus = phy_ConfigMACWithParaFile(Adapter, pszMACRegFile);
+	rtStatus = phy_ConfigMACWithParaFile(Adapter, PHY_FILE_MAC_REG);
 	if (rtStatus == _FAIL)
 #endif //CONFIG_LOAD_PHY_PARA_FROM_FILE
 	{
@@ -378,68 +373,23 @@ PHY_BBConfig8814(
 		PHY_SetBBReg(Adapter, rCCK_RX_Jaguar, 0xf0000000, 0x4);
 		/*pathB rx*/
 		PHY_SetBBReg(Adapter, rCCK_RX_Jaguar, 0x0f000000, 0x5);
-		DBG_871X("%s, unknown rf_config: %d\n", __func__, Adapter->registrypriv.rf_config);
+		RTW_INFO("%s, unknown rf_config: %d\n", __func__, Adapter->registrypriv.rf_config);
 		break;
 	}
 	
 	return rtStatus;	
 }
 
-s32
-phy_BB8814A_Config_ParaFile(
+int phy_BB8814A_Config_ParaFile(
 	IN	PADAPTER	Adapter
-	)
+)
 {
 	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
 	int			rtStatus = _SUCCESS;
 
-	s8				sz8814ABBRegFile[] = RTL8814A_PHY_REG;	
-	s8				sz8814AAGCTableFile[] = RTL8814A_AGC_TAB;
-	s8				sz8814ABBRegPgFile[] = RTL8814A_PHY_REG_PG;
-	s8				sz8814RFTxPwrLmtFile[] = RTL8814A_TXPWR_LMT;
-	s8				*pszBBRegFile = NULL, *pszAGCTableFile = NULL, 
-						*pszBBRegPgFile = NULL, *pszRFTxPwrLmtFile = NULL, *pszBBRegMpFile=NULL;
-	
-	//DBG_871X("==>phy_BB8814A_Config_ParaFile\n");
-
-	pszBBRegFile=sz8814ABBRegFile ;
-	pszAGCTableFile =sz8814AAGCTableFile;
-	pszBBRegPgFile = sz8814ABBRegPgFile;
-	pszRFTxPwrLmtFile = sz8814RFTxPwrLmtFile;
-
-	DBG_871X( "EEEPROMRegulatory %d\n", pHalData->EEPROMRegulatory );
-	//RT_TRACE( COMP_INIT, DBG_LOUD, ( "Custom tx power limit file: %s\n", pMgntInfo->RegPwrLimitFile.Octet ) );
-	//RT_TRACE( COMP_INIT, DBG_LOUD, ( "Custom power by rate file: %s\n", pMgntInfo->RegPwrByRateFile.Octet ) );
-
-	//DBG_871X(" ===> phy_BB8814A_Config_ParaFile() phy_reg:%s\n",pszBBRegFile);
-	//DBG_871X(" ===> phy_BB8814A_Config_ParaFile() phy_reg_pg:%s\n",pszBBRegPgFile);
-	//DBG_871X(" ===> phy_BB8814A_Config_ParaFile() agc_table:%s\n",pszAGCTableFile);
-
-
-	// Read Tx Power Limit 
-	PHY_InitTxPowerLimit( Adapter );
-	if ( Adapter->registrypriv.RegEnableTxPowerLimit == 1 || 
-	     ( Adapter->registrypriv.RegEnableTxPowerLimit == 2 && pHalData->EEPROMRegulatory == 1 ) )
-	{
+	/* Read PHY_REG.TXT BB INIT!! */
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		if (PHY_ConfigRFWithPowerLimitTableParaFile( Adapter, pszRFTxPwrLmtFile )== _FAIL)
-#endif
-		{
-#ifdef CONFIG_EMBEDDED_FWIMG
-			if (HAL_STATUS_SUCCESS != ODM_ConfigRFWithHeaderFile(&pHalData->odmpriv, CONFIG_RF_TXPWR_LMT, (ODM_RF_RADIO_PATH_E)0))
-				rtStatus = _FAIL;
-#endif
-		}
-
-		if(rtStatus != _SUCCESS){
-			DBG_871X("%s():Read Tx power limit fail\n",__FUNCTION__	);
-			goto phy_BB_Config_ParaFile_Fail;
-		}
-	}
-
-	// Read PHY_REG.TXT BB INIT!!
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	if (phy_ConfigBBWithParaFile(Adapter, pszBBRegFile, CONFIG_BB_PHY_REG) == _FAIL)
+	if (phy_ConfigBBWithParaFile(Adapter, PHY_FILE_PHY_REG, CONFIG_BB_PHY_REG) == _FAIL)
 #endif
 	{
 #ifdef CONFIG_EMBEDDED_FWIMG
@@ -448,16 +398,16 @@ phy_BB8814A_Config_ParaFile(
 #endif
 	}
 
-	if(rtStatus != _SUCCESS){
-		DBG_871X("%s(): CONFIG_BB_PHY_REG Fail!!\n",__FUNCTION__	);
+	if (rtStatus != _SUCCESS) {
+		RTW_INFO("%s(): CONFIG_BB_PHY_REG Fail!!\n", __FUNCTION__);
 		goto phy_BB_Config_ParaFile_Fail;
 	}
 
-	// Read PHY_REG_MP.TXT BB INIT!!
+	/* Read PHY_REG_MP.TXT BB INIT!! */
 #if (MP_DRIVER == 1)
 	if (Adapter->registrypriv.mp_mode == 1) {
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		if (phy_ConfigBBWithMpParaFile(Adapter, pszBBRegMpFile) == _FAIL)
+		if (phy_ConfigBBWithMpParaFile(Adapter, PHY_FILE_PHY_REG_MP) == _FAIL)
 #endif
 		{
 #ifdef CONFIG_EMBEDDED_FWIMG
@@ -466,44 +416,16 @@ phy_BB8814A_Config_ParaFile(
 #endif
 		}
 
-		if(rtStatus != _SUCCESS){
-			DBG_871X("phy_BB8812_Config_ParaFile():Write BB Reg MP Fail!!\n");
+		if (rtStatus != _SUCCESS) {
+			RTW_INFO("phy_BB8814_Config_ParaFile():Write BB Reg MP Fail!!\n");
 			goto phy_BB_Config_ParaFile_Fail;
 		}
 	}
-#endif	// #if (MP_DRIVER == 1)
+#endif	/*  #if (MP_DRIVER == 1) */
 
-	// If EEPROM or EFUSE autoload OK, We must config by PHY_REG_PG.txt
-	PHY_InitTxPowerByRate( Adapter );
-	if ( Adapter->registrypriv.RegEnableTxPowerByRate == 1 || 
-	     ( Adapter->registrypriv.RegEnableTxPowerByRate == 2 && pHalData->EEPROMRegulatory != 2 ) )
-	{
+	/* BB AGC table Initialization */
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		if (phy_ConfigBBWithPgParaFile(Adapter, pszBBRegPgFile) == _FAIL)
-#endif
-		{
-#ifdef CONFIG_EMBEDDED_FWIMG
-			if (HAL_STATUS_SUCCESS != ODM_ConfigBBWithHeaderFile(&pHalData->odmpriv, CONFIG_BB_PHY_REG_PG))
-				rtStatus = _FAIL;
-#endif
-		}
-
-		if ( pHalData->odmpriv.PhyRegPgValueType == PHY_REG_PG_EXACT_VALUE )
-			PHY_TxPowerByRateConfiguration( Adapter );
-
-		if ( Adapter->registrypriv.RegEnableTxPowerLimit == 1 || 
-	         ( Adapter->registrypriv.RegEnableTxPowerLimit == 2 && pHalData->EEPROMRegulatory == 1 ) )
-			PHY_ConvertTxPowerLimitToPowerIndex( Adapter );
-
-		if(rtStatus != _SUCCESS){
-			DBG_871X("%s(): CONFIG_BB_PHY_REG_PG Fail!!\n",__FUNCTION__	);
-			goto phy_BB_Config_ParaFile_Fail;
-		}
-	}
-
-	// BB AGC table Initialization
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	if (phy_ConfigBBWithParaFile(Adapter, pszAGCTableFile, CONFIG_BB_AGC_TAB) == _FAIL)
+	if (phy_ConfigBBWithParaFile(Adapter, PHY_FILE_AGC_TAB, CONFIG_BB_AGC_TAB) == _FAIL)
 #endif
 	{
 #ifdef CONFIG_EMBEDDED_FWIMG
@@ -512,14 +434,12 @@ phy_BB8814A_Config_ParaFile(
 #endif
 	}
 
-	if(rtStatus != _SUCCESS){
-		DBG_871X("%s(): CONFIG_BB_AGC_TAB Fail!!\n",__FUNCTION__	);
-	}
+	if (rtStatus != _SUCCESS)
+		RTW_INFO("%s(): CONFIG_BB_AGC_TAB Fail!!\n", __FUNCTION__);
 
 phy_BB_Config_ParaFile_Fail:
 
 	return rtStatus;
-
 }
 
 
@@ -664,7 +584,7 @@ PHY_RFConfig8814A(
 	switch(pHalData->rf_chip)
 	{
 		case RF_PSEUDO_11N:
-			DBG_871X("%s(): RF_PSEUDO_11N\n",__FUNCTION__);
+			RTW_INFO("%s(): RF_PSEUDO_11N\n",__FUNCTION__);
 			break;
 		default: 
 			rtStatus = PHY_RF6052_Config_8814A(Adapter);
@@ -673,35 +593,6 @@ PHY_RFConfig8814A(
 
 	return rtStatus;
 }
-
-#if (MP_DRIVER == 1)
-
-RT_STATUS PHY_BBConfigMP_8814A(PADAPTER	Adapter)
-{
-
-	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
- 	RT_STATUS			rtStatus = RT_STATUS_FAILURE;
-	s1Byte				sz8814ABBRegMpFile[] = RTL8814A_PHY_REG_MP;
-	ps1Byte 			pszBBRegMpFile=NULL;
-
-	pszBBRegMpFile = sz8814ABBRegMpFile;
-
-	DBG_871X(" ===> PHY_BBConfigMP_8814A() phy_reg_mp:%s\n",pszBBRegMpFile);
-	
-	//3 Read PHY_REG_MP.TXT BB INIT!!
-//#if	LOAD_PHY_PARA_FROM_HEADER
-#ifdef CONFIG_EMBEDDED_FWIMG
-	ODM_ConfigBBWithHeaderFile(&pHalData->odmpriv, CONFIG_BB_PHY_REG_MP);
-	rtStatus = RT_STATUS_SUCCESS;
-#else
-	rtStatus = phy_ConfigBBWithMpParaFile(Adapter,pszBBRegMpFile);
-#endif
-
-	return rtStatus;
-}
-
-#endif
-
 
 //1 4. RF State setting API
 
@@ -1293,29 +1184,32 @@ PHY_SetTxPowerLevel8814(
  **************************************************************************************************************/
 u8
 PHY_GetTxPowerIndex_8814A(
-	IN	PADAPTER			pAdapter,
+	IN	PADAPTER		pAdapter,
 	IN	u8				RFPath,
 	IN	u8				Rate,	
-	IN	CHANNEL_WIDTH		BandWidth,	
-	IN	u8				Channel
+	IN	u8				BandWidth,	
+	IN	u8				Channel,
+	struct txpwr_idx_comp *tic
 	)
 {
-	PHAL_DATA_TYPE		pHalData = GET_HAL_DATA(pAdapter);
+	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(pAdapter);
 	s8				powerDiffByRate = 0;
 	s8				txPower = 0, limit = 0;
 	u8				tx_num = MgntQuery_NssTxRate(Rate );
-	BOOLEAN				bIn24G = FALSE;
+	BOOLEAN			bIn24G = FALSE;
+	s8				tpt_offset = 0;
 
-	/* DBG_871X( "===>%s\n", __FUNCTION__ ); */
+	/* RTW_INFO( "===>%s\n", __FUNCTION__ ); */
 	
 	txPower = (s8) PHY_GetTxPowerIndexBase( pAdapter, RFPath, Rate, BandWidth, Channel, &bIn24G );
 
 	powerDiffByRate = PHY_GetTxPowerByRate( pAdapter, (u8)(!bIn24G), RFPath, tx_num, Rate );
 
 	limit = PHY_GetTxPowerLimit( pAdapter, pAdapter->registrypriv.RegPwrTblSel, (u8)(!bIn24G), pHalData->CurrentChannelBW, RFPath, Rate, pHalData->CurrentChannel);
+	tpt_offset = PHY_GetTxPowerTrackingOffset(pAdapter, RFPath, Rate);
 
 	powerDiffByRate = powerDiffByRate > limit ? limit : powerDiffByRate;
-	/*DBG_871X("Rate-0x%x: (TxPower, PowerDiffByRate Path-%c) = (0x%X, %d)\n", Rate, ((RFPath==0)?'A':(RFPath==1)?'B':(RFPath==2)?'C':'D'), txPower, powerDiffByRate);*/
+	/*RTW_INFO("Rate-0x%x: (TxPower, PowerDiffByRate Path-%c) = (0x%X, %d)\n", Rate, ((RFPath==0)?'A':(RFPath==1)?'B':(RFPath==2)?'C':'D'), txPower, powerDiffByRate);*/
 
 	txPower += powerDiffByRate;
 	
@@ -1326,6 +1220,15 @@ PHY_GetTxPowerIndex_8814A(
 #endif
 #endif
 	phy_TxPwrAdjInPercentage(pAdapter, (u8 *)&txPower);
+
+	if (tic) {
+		tic->base = txPower;
+		tic->by_rate = powerDiffByRate;
+		tic->limit = limit;
+		tic->tpt = tpt_offset;
+		tic->ebias = 0;
+	}
+
 	if(txPower > MAX_POWER_INDEX)
 		txPower = MAX_POWER_INDEX;
 
@@ -1333,7 +1236,7 @@ PHY_GetTxPowerIndex_8814A(
 		//(pHalData->bautoload_fail_flag || pHalData->EfuseMap[EFUSE_INIT_MAP][EEPROM_TX_PWR_INX_JAGUAR] == 0xFF))
 		//txPower = 0x12;
 
-	/*DBG_871X("Final Tx Power(RF-%c, Channel: %d) = %d(0x%X)\n", ((RFPath==0)?'A':(RFPath==1)?'B':(RFPath==2)?'C':'D'), Channel,
+	/*RTW_INFO("Final Tx Power(RF-%c, Channel: %d) = %d(0x%X)\n", ((RFPath==0)?'A':(RFPath==1)?'B':(RFPath==2)?'C':'D'), Channel,
 		txPower, txPower);*/
 
 	return (u8) txPower;	
@@ -1352,7 +1255,7 @@ PHY_SetTxPowerIndex_8814A(
 
 	txagc_table_wd |= (RFPath << 8) | MRateToHwRate(Rate) | (PowerIndex << 24);
 	PHY_SetBBReg(Adapter, 0x1998, bMaskDWord, txagc_table_wd);
-	/* DBG_871X("txagc_table_wd %x\n", txagc_table_wd); */
+	/* RTW_INFO("txagc_table_wd %x\n", txagc_table_wd); */
 	if (Rate == MGN_1M) {
 		PHY_SetBBReg(Adapter, 0x1998, bMaskDWord, txagc_table_wd);	/* first time to turn on the txagc table */
 										/* second to write the addr0 */
@@ -1776,7 +1679,7 @@ PHY_SwitchWirelessBand8814A(
 	HAL_DATA_TYPE	*pHalData	= GET_HAL_DATA(Adapter);
 	u8	PreBand = pHalData->CurrentBandType, tepReg = 0;
 			
-	DBG_871X("==>PHY_SwitchWirelessBand8814() %s\n", ((Band==0)?"2.4G":"5G"));
+	RTW_INFO("==>PHY_SwitchWirelessBand8814() %s\n", ((Band==0)?"2.4G":"5G"));
 
 	pHalData->CurrentBandType =(BAND_TYPE)Band;
 
@@ -1834,7 +1737,7 @@ PHY_SwitchWirelessBand8814A(
 		}
 
 		PHY_SetBBReg(Adapter, rOFDMCCKEN_Jaguar, bOFDMEN_Jaguar|bCCKEN_Jaguar, 0x02);
-		//DBG_871X("==>PHY_SwitchWirelessBand8814() BAND_ON_5G settings OFDM index 0x%x\n", pHalData->OFDM_index[0]);
+		//RTW_INFO("==>PHY_SwitchWirelessBand8814() BAND_ON_5G settings OFDM index 0x%x\n", pHalData->OFDM_index[0]);
 	}
 
 	phy_SetBBSwingByBand_8814A(Adapter, Band, PreBand);
@@ -1844,7 +1747,7 @@ PHY_SwitchWirelessBand8814A(
 	tepReg = rtw_read8(Adapter, REG_SYS_CFG3_8814A+2);
 	rtw_write8(Adapter, REG_SYS_CFG3_8814A+2, tepReg | BIT0);
 	
-	DBG_871X("<==PHY_SwitchWirelessBand8814():Switch Band OK.\n");
+	RTW_INFO("<==PHY_SwitchWirelessBand8814():Switch Band OK.\n");
 	return _SUCCESS;	
 }
 
@@ -1857,7 +1760,7 @@ phy_GetSecondaryChnl_8814A(
 	u8						SCSettingOf40 = 0, SCSettingOf20 = 0;
 	PHAL_DATA_TYPE				pHalData = GET_HAL_DATA(Adapter);
 
-	//DBG_871X("SCMapping: Case: pHalData->CurrentChannelBW %d, pHalData->nCur80MhzPrimeSC %d, pHalData->nCur40MhzPrimeSC %d \n",pHalData->CurrentChannelBW,pHalData->nCur80MhzPrimeSC,pHalData->nCur40MhzPrimeSC);
+	//RTW_INFO("SCMapping: Case: pHalData->CurrentChannelBW %d, pHalData->nCur80MhzPrimeSC %d, pHalData->nCur40MhzPrimeSC %d \n",pHalData->CurrentChannelBW,pHalData->nCur80MhzPrimeSC,pHalData->nCur40MhzPrimeSC);
 	if(pHalData->CurrentChannelBW== CHANNEL_WIDTH_80)
 	{
 		if(pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER)
@@ -1865,7 +1768,7 @@ phy_GetSecondaryChnl_8814A(
 		else if(pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER)
 			SCSettingOf40 = VHT_DATA_SC_40_UPPER_OF_80MHZ;
 		else
-			DBG_871X("SCMapping: DONOT CARE Mode Setting\n");
+			RTW_INFO("SCMapping: DONOT CARE Mode Setting\n");
 		
 		if((pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER) && (pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER))
 			SCSettingOf20 = VHT_DATA_SC_20_LOWEST_OF_80MHZ;
@@ -1882,22 +1785,22 @@ phy_GetSecondaryChnl_8814A(
 			else if(pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER)
 				SCSettingOf20 = VHT_DATA_SC_40_UPPER_OF_80MHZ;
 			else
-				DBG_871X("SCMapping: DONOT CARE Mode Setting\n");
+				RTW_INFO("SCMapping: DONOT CARE Mode Setting\n");
 		}	
 	}
 	else if(pHalData->CurrentChannelBW == CHANNEL_WIDTH_40)
 	{
-		DBG_871X("SCMapping: pHalData->CurrentChannelBW %d, pHalData->nCur40MhzPrimeSC %d \n",pHalData->CurrentChannelBW,pHalData->nCur40MhzPrimeSC);
+		RTW_INFO("SCMapping: pHalData->CurrentChannelBW %d, pHalData->nCur40MhzPrimeSC %d \n",pHalData->CurrentChannelBW,pHalData->nCur40MhzPrimeSC);
 
 		if(pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER)
 			SCSettingOf20 = VHT_DATA_SC_20_UPPER_OF_80MHZ;
 		else if(pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER)
 			SCSettingOf20 = VHT_DATA_SC_20_LOWER_OF_80MHZ;
 		else
-			DBG_871X("SCMapping: DONOT CARE Mode Setting\n");
+			RTW_INFO("SCMapping: DONOT CARE Mode Setting\n");
 	}
 
-	/*DBG_871X("SCMapping: SC Value %x\n", ((SCSettingOf40 << 4) | SCSettingOf20));*/
+	/*RTW_INFO("SCMapping: SC Value %x\n", ((SCSettingOf40 << 4) | SCSettingOf20));*/
 	return  ( (SCSettingOf40 << 4) | SCSettingOf20);
 }
 
@@ -2002,7 +1905,7 @@ void PHY_Set_SecCCATH_by_RXANT_8814A(PADAPTER	pAdapter,u4Byte	ulAntennaRx)
 		break;
 
 		default:
-				DBG_871X("Unknown Rx antenna.\n");
+				RTW_INFO("Unknown Rx antenna.\n");
 		break;
 		}
 	} else if(pHalData->CurrentChannelBW == CHANNEL_WIDTH_40) {
@@ -2094,8 +1997,8 @@ VOID phy_SpurCalibration_8814A(PADAPTER	Adapter)
 	BOOLEAN		Reset_NBI_CSI = TRUE;
 	PDM_ODM_T		pDM_Odm = &pHalData->odmpriv;
 
-	/*DBG_871X("%s(),RFE Type =%d, CurrentCh = %d ,ChannelBW =%d\n", __func__, pHalData->RFEType, pHalData->CurrentChannel, pHalData->CurrentChannelBW);*/
-	/*DBG_871X("%s(),Before RrNBI_Setting_Jaguar= %x\n", __func__, PHY_QueryBBReg(Adapter, rNBI_Setting_Jaguar, bMaskDWord));*/
+	/*RTW_INFO("%s(),RFE Type =%d, CurrentCh = %d ,ChannelBW =%d\n", __func__, pHalData->RFEType, pHalData->CurrentChannel, pHalData->CurrentChannelBW);*/
+	/*RTW_INFO("%s(),Before RrNBI_Setting_Jaguar= %x\n", __func__, PHY_QueryBBReg(Adapter, rNBI_Setting_Jaguar, bMaskDWord));*/
 	
 	if (pHalData->RFEType == 0) {
 		switch (pHalData->CurrentChannelBW) {
@@ -2204,7 +2107,7 @@ VOID phy_SpurCalibration_8814A(PADAPTER	Adapter)
 	}
 	
 	phydm_spur_nbi_setting_8814a(pDM_Odm);
-	/*DBG_871X("%s(),After RrNBI_Setting_Jaguar= %x\n", __func__, PHY_QueryBBReg(Adapter, rNBI_Setting_Jaguar, bMaskDWord));*/
+	/*RTW_INFO("%s(),After RrNBI_Setting_Jaguar= %x\n", __func__, PHY_QueryBBReg(Adapter, rNBI_Setting_Jaguar, bMaskDWord));*/
 }
 
 
@@ -2227,7 +2130,7 @@ void phy_ModifyInitialGain_8814A(
 		chnl_section = 3; /*5GH*/
 
 	if (chnl_section > 3) {
-		DBG_871X("%s: worng channel section\n", __func__);
+		RTW_INFO("%s: worng channel section\n", __func__);
 		return;
 	}
 
@@ -2235,8 +2138,8 @@ void phy_ModifyInitialGain_8814A(
 		u1Byte	hex_offset;
 
 		hex_offset = (u1Byte)(pHalData->RxGainOffset[chnl_section] >> (12-4*i))&0x0f;
-		DBG_871X("%s: pHalData->RxGainOffset[%d] = %x\n", __func__, chnl_section, pHalData->RxGainOffset[chnl_section]);
-		DBG_871X("%s: hex_offset = %x\n", __func__, hex_offset);
+		RTW_INFO("%s: pHalData->RxGainOffset[%d] = %x\n", __func__, chnl_section, pHalData->RxGainOffset[chnl_section]);
+		RTW_INFO("%s: hex_offset = %x\n", __func__, hex_offset);
 
 		if (hex_offset == 0xf)
 			offset[i] = 0;
@@ -2245,8 +2148,8 @@ void phy_ModifyInitialGain_8814A(
 		else
 		 	offset[i] = 0x0 - hex_offset;
 		 offset[i] = (offset[i] / 2) * 2;
-		 DBG_871X("%s: offset[%d] = %x\n", __func__, i, offset[i]);
-		 DBG_871X("%s: BackUp_IG_REG_4_Chnl_Section[%d] = %x\n", __func__, i, pHalData->BackUp_IG_REG_4_Chnl_Section[i]);
+		 RTW_INFO("%s: offset[%d] = %x\n", __func__, i, offset[i]);
+		 RTW_INFO("%s: BackUp_IG_REG_4_Chnl_Section[%d] = %x\n", __func__, i, pHalData->BackUp_IG_REG_4_Chnl_Section[i]);
 	}
 
 	if (pHalData->BackUp_IG_REG_4_Chnl_Section[0] != 0 &&
@@ -2276,7 +2179,7 @@ VOID phy_SetBwMode8814A(PADAPTER	Adapter)
 
 	if(pHalData->rf_chip == RF_PSEUDO_11N)
 	{
-		DBG_871X("phy_SetBwMode8814A: return for PSEUDO \n");
+		RTW_INFO("phy_SetBwMode8814A: return for PSEUDO \n");
 		return;
 	}
 
@@ -2305,7 +2208,7 @@ VOID phy_SetBwMode8814A(PADAPTER	Adapter)
 			break;
 
 		default:
-			DBG_871X("%s():unknown Bandwidth:%#X\n", __func__, pHalData->CurrentChannelBW);
+			RTW_INFO("%s():unknown Bandwidth:%#X\n", __func__, pHalData->CurrentChannelBW);
 			break;
 	}
 	
@@ -2428,19 +2331,19 @@ phy_ConfigKFree8814A(
 	u8			targetval_D = 0xFF;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	
-	//DBG_871X("===>phy_ConfigKFree8814A()\n");
+	//RTW_INFO("===>phy_ConfigKFree8814A()\n");
 	
-	if (Adapter->registrypriv.RegRfKFreeEnable == 2)
+	if (Adapter->registrypriv.RegPwrTrimEnable == 2)
 	{
-		//DBG_871X("phy_ConfigKFree8814A(): RegRfKFreeEnable == 2, Disable \n");
+		//RTW_INFO("phy_ConfigKFree8814A(): RegPwrTrimEnable == 2, Disable \n");
 		return;
 	}
-	else if (Adapter->registrypriv.RegRfKFreeEnable == 1 || Adapter->registrypriv.RegRfKFreeEnable == 0)
+	else if (Adapter->registrypriv.RegPwrTrimEnable == 1 || Adapter->registrypriv.RegPwrTrimEnable == 0)
 	{
-		DBG_871X("phy_ConfigKFree8814A(): RegRfKFreeEnable == TRUE \n");
+		RTW_INFO("phy_ConfigKFree8814A(): RegPwrTrimEnable == TRUE \n");
 		if (bandType == BAND_ON_2_4G) // 2G
 		{
-			DBG_871X("phy_ConfigKFree8814A(): bandType == BAND_ON_2_4G, channelToSW= %d  \n", channelToSW);
+			RTW_INFO("phy_ConfigKFree8814A(): bandType == BAND_ON_2_4G, channelToSW= %d  \n", channelToSW);
 			if (channelToSW <= 14 && channelToSW >= 1)
 			{
 				efuse_OneByteRead(Adapter, 0x3F4, &targetval_A, FALSE);	// for Path A and B
@@ -2450,7 +2353,7 @@ phy_ConfigKFree8814A(
 		}
 		else if (bandType == BAND_ON_5G)
 		{
-			DBG_871X("phy_ConfigKFree8814A(): bandType == BAND_ON_5G, channelToSW= %d  \n", channelToSW);
+			RTW_INFO("phy_ConfigKFree8814A(): bandType == BAND_ON_5G, channelToSW= %d  \n", channelToSW);
 			if (channelToSW >= 36 && channelToSW < 50) // 5GLB_1
 			{
 				efuse_OneByteRead(Adapter, 0x3E0, &targetval_A, FALSE);
@@ -2487,13 +2390,13 @@ phy_ConfigKFree8814A(
 				efuse_OneByteRead(Adapter, 0x3F3, &targetval_D, FALSE);
 			}
 		}
-		DBG_871X("phy_ConfigKFree8814A(): targetval_A= %#x \n", targetval_A);
-		DBG_871X("phy_ConfigKFree8814A(): targetval_B= %#x \n", targetval_B);
-		DBG_871X("phy_ConfigKFree8814A(): targetval_C= %#x \n", targetval_C);
-		DBG_871X("phy_ConfigKFree8814A(): targetval_D= %#x \n", targetval_D);
+		RTW_INFO("phy_ConfigKFree8814A(): targetval_A= %#x \n", targetval_A);
+		RTW_INFO("phy_ConfigKFree8814A(): targetval_B= %#x \n", targetval_B);
+		RTW_INFO("phy_ConfigKFree8814A(): targetval_C= %#x \n", targetval_C);
+		RTW_INFO("phy_ConfigKFree8814A(): targetval_D= %#x \n", targetval_D);
 		
 		// Make sure the targetval is defined
-		if ((Adapter->registrypriv.RegRfKFreeEnable == 1) && ((targetval_A != 0xFF) || (pHalData->RfKFreeEnable == TRUE)))
+		if ((Adapter->registrypriv.RegPwrTrimEnable == 1) && ((targetval_A != 0xFF) || (pHalData->RfKFreeEnable == TRUE)))
 		{
 			if (bandType == BAND_ON_2_4G) // 2G
 			{
@@ -2540,11 +2443,11 @@ phy_SwChnl8814A(
 	u8 			channelToSW = pHalData->CurrentChannel;
 	u32			RFValToWR , RFTmpVal, BitShift, BitMask;
 	  
-	//DBG_871X("[BW:CHNL], phy_SwChnl8814A(), switch to channel %d !!\n", channelToSW);
+	//RTW_INFO("[BW:CHNL], phy_SwChnl8814A(), switch to channel %d !!\n", channelToSW);
 
 	if (phy_SwBand8814A(pAdapter, channelToSW) == FALSE)
 	{
-		DBG_871X("error Chnl %d", channelToSW);
+		RTW_INFO("error Chnl %d", channelToSW);
 	}
 
 	if(pHalData->rf_chip == RF_PSEUDO_11N)
@@ -2563,7 +2466,7 @@ phy_SwChnl8814A(
 			/* Todo: wait for new phydm ready */
 			phy_ConfigKFree8814A(pAdapter, channelToSW, pHalData->CurrentBandType);
 			phydm_ConfigKFree(pDM_Odm, channelToSW, kfree_data->bb_gain);
-			DBG_871X("RfKFree_ch_group =%d\n", channelIdx);
+			RTW_INFO("RfKFree_ch_group =%d\n", channelIdx);
 		}
 	#endif
 
@@ -2749,10 +2652,10 @@ phy_SwChnlAndSetBwMode8814A(
 	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
 	PDM_ODM_T		pDM_Odm = &pHalData->odmpriv;
 
-	//DBG_871X("phy_SwChnlAndSetBwMode8814A(): bSwChnl %d, bSetChnlBW %d \n", pHalData->bSwChnl, pHalData->bSetChnlBW);
+	//RTW_INFO("phy_SwChnlAndSetBwMode8814A(): bSwChnl %d, bSetChnlBW %d \n", pHalData->bSwChnl, pHalData->bSetChnlBW);
 	if ( Adapter->bNotifyChannelChange )
 	{
-		DBG_871X( "[%s] bSwChnl=%d, ch=%d, bSetChnlBW=%d, bw=%d\n", 
+		RTW_INFO( "[%s] bSwChnl=%d, ch=%d, bSetChnlBW=%d, bw=%d\n", 
 			__FUNCTION__, 
 			pHalData->bSwChnl,
 			pHalData->CurrentChannel,
@@ -2918,7 +2821,7 @@ PHY_HandleSwChnlAndSetBW8814A(
 	//check is swchnl or setbw
 	if(!bSwitchChannel && !bSetBandWidth)
 	{
-		DBG_871X("PHY_HandleSwChnlAndSetBW8812:  not switch channel and not set bandwidth \n");
+		RTW_INFO("PHY_HandleSwChnlAndSetBW8812:  not switch channel and not set bandwidth \n");
 		return;
 	}
 
@@ -2952,7 +2855,7 @@ PHY_HandleSwChnlAndSetBW8814A(
 
 	if(!pHalData->bSetChnlBW && !pHalData->bSwChnl)
 	{
-		//DBG_871X("<= PHY_HandleSwChnlAndSetBW8812: bSwChnl %d, bSetChnlBW %d \n",pHalData->bSwChnl,pHalData->bSetChnlBW);
+		//RTW_INFO("<= PHY_HandleSwChnlAndSetBW8812: bSwChnl %d, bSetChnlBW %d \n",pHalData->bSwChnl,pHalData->bSetChnlBW);
 		return;
 	}
 
@@ -3007,11 +2910,11 @@ PHY_HandleSwChnlAndSetBW8814A(
 		}
 	}
 
-	//DBG_871X("Channel %d ChannelBW %d ",pHalData->CurrentChannel, pHalData->CurrentChannelBW);
-	//DBG_871X("40MhzPrimeSC %d 80MhzPrimeSC %d ",pHalData->nCur40MhzPrimeSC, pHalData->nCur80MhzPrimeSC);
-	//DBG_871X("CenterFrequencyIndex1 %d \n",pHalData->CurrentCenterFrequencyIndex1);
+	//RTW_INFO("Channel %d ChannelBW %d ",pHalData->CurrentChannel, pHalData->CurrentChannelBW);
+	//RTW_INFO("40MhzPrimeSC %d 80MhzPrimeSC %d ",pHalData->nCur40MhzPrimeSC, pHalData->nCur80MhzPrimeSC);
+	//RTW_INFO("CenterFrequencyIndex1 %d \n",pHalData->CurrentCenterFrequencyIndex1);
 
-	//DBG_871X("<= PHY_HandleSwChnlAndSetBW8812: bSwChnl %d, bSetChnlBW %d \n",pHalData->bSwChnl,pHalData->bSetChnlBW);
+	//RTW_INFO("<= PHY_HandleSwChnlAndSetBW8812: bSwChnl %d, bSetChnlBW %d \n",pHalData->bSwChnl,pHalData->bSetChnlBW);
 
 }
 
@@ -3072,11 +2975,11 @@ PHY_SetBWMode8814(
 {
 	PHAL_DATA_TYPE		pHalData = GET_HAL_DATA(Adapter);
 
-	//DBG_871X("%s()===>\n",__FUNCTION__);
+	//RTW_INFO("%s()===>\n",__FUNCTION__);
 
 	PHY_HandleSwChnlAndSetBW8814A(Adapter, _FALSE, _TRUE, pHalData->CurrentChannel, Bandwidth, Offset, Offset, pHalData->CurrentChannel);
 
-	//DBG_871X("<==%s()\n",__FUNCTION__);
+	//RTW_INFO("<==%s()\n",__FUNCTION__);
 }
 
 VOID
@@ -3085,11 +2988,11 @@ PHY_SwChnl8814(
 	IN	u8			channel
 	)
 {
-	//DBG_871X("%s()===>\n",__FUNCTION__);
+	//RTW_INFO("%s()===>\n",__FUNCTION__);
 
 	PHY_HandleSwChnlAndSetBW8814A(Adapter, _TRUE, _FALSE, channel, 0, 0, 0, channel);
 
-	//DBG_871X("<==%s()\n",__FUNCTION__);
+	//RTW_INFO("<==%s()\n",__FUNCTION__);
 }
 
 VOID
@@ -3101,10 +3004,10 @@ PHY_SetSwChnlBWMode8814(
 	IN	u8					Offset80
 )
 {
-	//DBG_871X("%s()===>\n",__FUNCTION__);
+	//RTW_INFO("%s()===>\n",__FUNCTION__);
 
 	PHY_HandleSwChnlAndSetBW8814A(Adapter, _TRUE, _TRUE, channel, Bandwidth, Offset40, Offset80, channel);
 
-	//DBG_871X("<==%s()\n",__FUNCTION__);
+	//RTW_INFO("<==%s()\n",__FUNCTION__);
 }
 

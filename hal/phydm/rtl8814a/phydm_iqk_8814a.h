@@ -24,21 +24,7 @@
 #define 	MAC_REG_NUM_8814 2
 #define	BB_REG_NUM_8814 13
 #define 	RF_REG_NUM_8814 2
-#define	LOK_delay 1
-#define	WBIQK_delay 10
-#define 	TX_IQK 0
-#define 	RX_IQK 1
-#define	NUM 4	
 /*---------------------------End Define Parameters-------------------------------*/
-
-typedef struct _IQK_INFORMATION{
-	BOOLEAN		LOK_fail[NUM];
-	BOOLEAN		IQK_fail[2][NUM];
-	u4Byte		IQC_Matrix[2][NUM];
-	u1Byte      IQKtimes;
-
-}IQK_INFO, *PIQK_INFO;
-
 
 #if !(DM_ODM_SUPPORT_TYPE & ODM_AP)
 VOID 
