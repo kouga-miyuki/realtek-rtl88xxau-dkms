@@ -45,7 +45,7 @@ PHY_RF6052SetBandwidth8814A(
 	switch(Bandwidth)
 	{
 		case CHANNEL_WIDTH_20:
-			/*DBG_871X("PHY_RF6052SetBandwidth8814A(), set 20MHz\n");*/
+			/*RTW_INFO("PHY_RF6052SetBandwidth8814A(), set 20MHz\n");*/
 			PHY_SetRFReg(Adapter, RF_PATH_A, RF_CHNLBW_Jaguar, BIT11|BIT10, 3);
 			PHY_SetRFReg(Adapter, RF_PATH_B, RF_CHNLBW_Jaguar, BIT11|BIT10, 3);
 			PHY_SetRFReg(Adapter, RF_PATH_C, RF_CHNLBW_Jaguar, BIT11|BIT10, 3);
@@ -53,7 +53,7 @@ PHY_RF6052SetBandwidth8814A(
 		break;
 			
 		case CHANNEL_WIDTH_40:
-			/*DBG_871X("PHY_RF6052SetBandwidth8814A(), set 40MHz\n");*/
+			/*RTW_INFO("PHY_RF6052SetBandwidth8814A(), set 40MHz\n");*/
 			PHY_SetRFReg(Adapter, RF_PATH_A, RF_CHNLBW_Jaguar, BIT11|BIT10, 1);	
 			PHY_SetRFReg(Adapter, RF_PATH_B, RF_CHNLBW_Jaguar, BIT11|BIT10, 1);	
 			PHY_SetRFReg(Adapter, RF_PATH_C, RF_CHNLBW_Jaguar, BIT11|BIT10, 1);	
@@ -61,7 +61,7 @@ PHY_RF6052SetBandwidth8814A(
 		break;
 		
 		case CHANNEL_WIDTH_80:
-			/*DBG_871X("PHY_RF6052SetBandwidth8814A(), set 80MHz\n");*/
+			/*RTW_INFO("PHY_RF6052SetBandwidth8814A(), set 80MHz\n");*/
 			PHY_SetRFReg(Adapter, RF_PATH_A, RF_CHNLBW_Jaguar, BIT11|BIT10, 0);	
 			PHY_SetRFReg(Adapter, RF_PATH_B, RF_CHNLBW_Jaguar, BIT11|BIT10, 0);	
 			PHY_SetRFReg(Adapter, RF_PATH_C, RF_CHNLBW_Jaguar, BIT11|BIT10, 0);	
@@ -69,7 +69,7 @@ PHY_RF6052SetBandwidth8814A(
 		break;
 			
 		default:
-			DBG_871X("PHY_RF6052SetBandwidth8814A(): unknown Bandwidth: %#X\n",Bandwidth );
+			RTW_INFO("PHY_RF6052SetBandwidth8814A(): unknown Bandwidth: %#X\n",Bandwidth );
 			break;			
 	}
 }
@@ -83,11 +83,11 @@ phy_RF6052_Config_ParaFile_8814A(
 	u8					eRFPath;
 	int					rtStatus = _SUCCESS;
 	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
-	static char			sz8814RadioAFile[] = RTL8814A_PHY_RADIO_A;
-	static char			sz8814RadioBFile[] = RTL8814A_PHY_RADIO_B;
-	static char			sz8814RadioCFile[] = RTL8814A_PHY_RADIO_C;
-	static char			sz8814RadioDFile[] = RTL8814A_PHY_RADIO_D;
-	static char 		sz8814TxPwrTrack[] = RTL8814A_TXPWR_TRACK;
+	static char			sz8814RadioAFile[] = PHY_FILE_RADIO_A;
+	static char			sz8814RadioBFile[] = PHY_FILE_RADIO_B;
+	static char			sz8814RadioCFile[] = PHY_FILE_RADIO_C;
+	static char			sz8814RadioDFile[] = PHY_FILE_RADIO_D;
+	static char 		sz8814TxPwrTrack[] = PHY_FILE_TXPWR_TRACK;
 	char				*pszRadioAFile = NULL, *pszRadioBFile = NULL, *pszRadioCFile = NULL, *pszRadioDFile = NULL, *pszTxPwrTrack = NULL;
 
 
@@ -155,7 +155,7 @@ phy_RF6052_Config_ParaFile_8814A(
 		}
 
 		if(rtStatus != _SUCCESS){
-			DBG_871X("%s():Radio[%d] Fail!!", __FUNCTION__, eRFPath);
+			RTW_INFO("%s():Radio[%d] Fail!!", __FUNCTION__, eRFPath);
 			goto phy_RF6052_Config_ParaFile_Fail;
 		}
 

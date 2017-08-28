@@ -361,8 +361,6 @@ rtl8814_HalDmWatchDog(
 	PADAPTER pbuddy_adapter = Adapter->pbuddy_adapter;
 #endif //CONFIG_CONCURRENT_MODE
 
-	_func_enter_;
-
 	if (!rtw_is_hw_init_completed(Adapter))
 		goto skip_dm;
 
@@ -468,7 +466,6 @@ void rtl8814_init_dm_priv(IN PADAPTER Adapter)
 	ODM_InitAllTimers(podmpriv );	
 	PHYDM_InitDebugSetting(podmpriv);
 
-	pHalData->TxPwrInPercentage = TX_PWR_PERCENTAGE_3;
 	pHalData->CurrentTxPwrIdx = 18;
 
 }
