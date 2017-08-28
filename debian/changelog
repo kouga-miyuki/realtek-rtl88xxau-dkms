@@ -1,3 +1,9 @@
+realtek-rtl88xxau-dkms (5.1.5~20170828-0kali1) kali-dev; urgency=medium
+
+  * Import new upstream branch (see bug 4198)
+
+ -- Sophie Brun <sophie@freexian.com>  Mon, 28 Aug 2017 16:20:07 +0200
+
 realtek-rtl88xxau-dkms (4.3.21~20170824-0kali1) kali-dev; urgency=medium
 
   * Change upstream repo
