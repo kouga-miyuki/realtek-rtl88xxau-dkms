@@ -1,1 +1,2 @@
-clean core hal ifcfg-wlan0 include Kconfig Makefile os_dep platform runwpa wlan0dhcp usr/src/realtek-rtl88xxau-5.1.5~20171206
+core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-5.1.5~20180108
+realtek-leds.conf etc/modprobe.d

@@ -1,3 +1,9 @@
+realtek-rtl88xxau-dkms (5.1.5~20180108-0kali1) kali-dev; urgency=medium
+
+  * Import new snapshot from git (see bug 4460)
+
+ -- Sophie Brun <sophie@freexian.com>  Tue, 09 Jan 2018 12:03:49 +0100
+
 realtek-rtl88xxau-dkms (5.1.5~20171206-0kali1) kali-dev; urgency=medium
 
   * Import new snapshot from git (see bug 4422)
