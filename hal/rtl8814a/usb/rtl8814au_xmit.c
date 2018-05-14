@@ -61,7 +61,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 
 #ifndef CONFIG_USE_USB_BUFFER_ALLOC_TX
 	if (padapter->registrypriv.mp_mode == 0) {
-		if((PACKET_OFFSET_SZ != 0) && (!bagg_pkt) &&(rtw_usb_bulk_size_boundary(padapter,TXDESC_SIZE+sz)==_FALSE)) {
+		if ((PACKET_OFFSET_SZ != 0) && (!bagg_pkt) &&(rtw_usb_bulk_size_boundary(padapter,TXDESC_SIZE+sz)==_FALSE)) {
 			ptxdesc = (pmem+PACKET_OFFSET_SZ);
 			//RTW_INFO("==> non-agg-pkt,shift pointer...\n");
 			pull = 1;
@@ -94,10 +94,9 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 	}
 
 #ifndef CONFIG_USE_USB_BUFFER_ALLOC_TX
-	if (padapter->registrypriv.mp_mode == 0)
-	{
-		if((PACKET_OFFSET_SZ != 0) && (!bagg_pkt)){
-			if((pull) && (pxmitframe->pkt_offset>0)) {
+	if (padapter->registrypriv.mp_mode == 0) {
+		if ((PACKET_OFFSET_SZ != 0) && (!bagg_pkt)) {
+			if ((pull) && (pxmitframe->pkt_offset>0)) {
 				pxmitframe->pkt_offset = pxmitframe->pkt_offset -1;
 			}
 		}
@@ -119,10 +118,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 
 	if (!pattrib->qos_en) {
 		/* HW sequence, to fix to use 0 queue. todo: 4AC packets to use auto queue select */
-		if (pattrib->sw_seq == _FALSE)
-			SET_TX_DESC_HWSEQ_EN_8814A(ptxdesc, 1); // Hw set sequence number
-		else
-			SET_TX_DESC_SEQ_8814A(ptxdesc, pattrib->seqnum);
+		SET_TX_DESC_HWSEQ_EN_8814A(ptxdesc, 1); // Hw set sequence number
 		SET_TX_DESC_EN_HWEXSEQ_8814A(ptxdesc, 0);
 		SET_TX_DESC_DISQSELSEQ_8814A(ptxdesc, 1);
 		SET_TX_DESC_HW_SSN_SEL_8814A(ptxdesc, 0);
@@ -130,8 +126,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 		SET_TX_DESC_SEQ_8814A(ptxdesc, pattrib->seqnum);
 	}
 
-	if((pxmitframe->frame_tag&0x0f) == DATA_FRAMETAG)
-	{
+	if ((pxmitframe->frame_tag&0x0f) == DATA_FRAMETAG) {
 		//RTW_INFO("pxmitframe->frame_tag == DATA_FRAMETAG\n");
 
 		rtl8814a_fill_txdesc_sectype(pattrib, ptxdesc);
@@ -189,7 +184,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			if (padapter->fix_rate != 0xFF) { // modify data rate by iwpriv
 				SET_TX_DESC_USE_RATE_8814A(ptxdesc, 1);
 				DriverFixedRate = 0x01;
-				if(padapter->fix_rate & BIT(7))
+				if (padapter->fix_rate & BIT(7))
 					SET_TX_DESC_DATA_SHORT_8814A(ptxdesc, 	1);
 
 				SET_TX_DESC_TX_RATE_8814A(ptxdesc, (padapter->fix_rate & 0x7F));
@@ -202,7 +197,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			if (pattrib->stbc)
 				SET_TX_DESC_DATA_STBC_8814A(ptxdesc, 1);
 
-			//work arond before fixing RA
+			//work around before fixing RA
 			//SET_TX_DESC_USE_RATE_8814A(ptxdesc, 1);
 			//SET_TX_DESC_TX_RATE_8814A(ptxdesc, 0x10);
 		} else {
@@ -253,7 +248,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			SET_TX_DESC_DATA_RETRY_LIMIT_8814A(ptxdesc, 5);
 			SET_TX_DESC_DISABLE_FB_8814A(ptxdesc, 1);
 
-			//if(pattrib->rts_cca)
+			//if (pattrib->rts_cca)
 			//{
 			//	SET_TX_DESC_NDPA_8812(ptxdesc, 2);
 			//}

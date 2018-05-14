@@ -1,8 +1,8 @@
 EXTRA_CFLAGS += $(USER_EXTRA_CFLAGS)
-EXTRA_CFLAGS += -O2
+EXTRA_CFLAGS += -O1
 #EXTRA_CFLAGS += -O3
-#EXTRA_CFLAGS += -Wall
-#EXTRA_CFLAGS += -Wextra
+EXTRA_CFLAGS += -Wall
+EXTRA_CFLAGS += -Wextra
 #EXTRA_CFLAGS += -Werror
 #EXTRA_CFLAGS += -pedantic
 #EXTRA_CFLAGS += -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes
@@ -21,6 +21,11 @@ GCC_VER_49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | bc )
 ifeq ($(GCC_VER_49),1)
 EXTRA_CFLAGS += -Wno-date-time	# Fix compile error && warning on gcc 4.9 and later
 endif
+
+# Relax some warnings from '-Wextra' so we won't get flooded with warnings
+EXTRA_CFLAGS += -Wno-sign-compare
+EXTRA_CFLAGS += -Wno-missing-field-initializers
+EXTRA_CFLAGS += -Wno-type-limits
 
 EXTRA_CFLAGS += -I$(src)/include
 EXTRA_CFLAGS += -I$(src)/hal/phydm
@@ -72,6 +77,7 @@ CONFIG_TDLS = n
 CONFIG_WIFI_MONITOR = y
 CONFIG_MCC_MODE = n
 CONFIG_APPEND_VENDOR_IE_ENABLE = n
+CONFIG_USB2_EXTERNAL_POWER = n
 ########################## Debug ###########################
 CONFIG_RTW_DEBUG = n
 # default log level is _DRV_INFO_ = 4,
@@ -86,7 +92,7 @@ CONFIG_HIGH_ACTIVE = n
 CONFIG_PNO_SUPPORT = n
 CONFIG_PNO_SET_DEBUG = n
 CONFIG_AP_WOWLAN = n
-######### Notify SDIO Host Keep Power During Syspend ##########
+######### Notify SDIO Host Keep Power During Suspend ##########
 CONFIG_RTW_SDIO_PM_KEEP_POWER = y
 ###################### MP HW TX MODE FOR VHT #######################
 CONFIG_MP_VHT_HW_TX_MODE = n
@@ -138,6 +144,7 @@ CONFIG_PLATFORM_ARM_SPREADTRUM_6820 = n
 CONFIG_PLATFORM_ARM_SPREADTRUM_8810 = n
 CONFIG_PLATFORM_ARM_WMT = n
 CONFIG_PLATFORM_ARM_RPI = n
+CONFIG_PLATFORM_ARM_ODROIDC2 = n
 CONFIG_PLATFORM_TI_DM365 = n
 CONFIG_PLATFORM_MOZART = n
 CONFIG_PLATFORM_RTK119X = n
@@ -145,6 +152,7 @@ CONFIG_PLATFORM_RTK129X = n
 CONFIG_PLATFORM_NOVATEK_NT72668 = n
 CONFIG_PLATFORM_HISILICON = n
 CONFIG_PLATFORM_ARM64 = n
+CONFIG_PLATFORM_PPC = n
 ###############################################################
 
 CONFIG_DRVEXT_MODULE = n
@@ -175,14 +183,18 @@ CONFIG_RTL8814A = y
 endif
 
 ifeq ($(DEBUG), 1)
-EXTRA_CFLAGS += -DDBG=1 -DCONFIG_RTW_DEBUG -DCONFIG_DBG_COUNTER -DRTW_LOG_LEVEL=5 
+EXTRA_CFLAGS += -DDBG=1 -DCONFIG_RTW_DEBUG -DCONFIG_DBG_COUNTER -DRTW_LOG_LEVEL=5
 EXTRA_CFLAGS += -DCONFIG_RADIOTAP_WITH_RXDESC
 else ifeq ($(DEBUG), 2)
 EXTRA_CFLAGS += -DDBG=1 -DCONFIG_RTW_DEBUG -DCONFIG_DBG_COUNTER -DRTW_LOG_LEVEL=5
-EXTRA_CFLAGS += -DCONFIG_DEBUG_RTL871X 
-EXTRA_CFLAGS += -DCONFIG_RADIOTAP_WITH_RXDESC 
+EXTRA_CFLAGS += -DCONFIG_DEBUG_RTL871X
+EXTRA_CFLAGS += -DCONFIG_RADIOTAP_WITH_RXDESC
 else
 EXTRA_CFLAGS += -DDBG=0
+endif
+
+ifeq ($(CONFIG_USB2_EXTERNAL_POWER), y)
+EXTRA_CFLAGS += -DCONFIG_USE_EXTERNAL_POWER
 endif
 
 _OS_INTFS_FILES :=	os_dep/osdep_service.o \
@@ -226,7 +238,7 @@ _HAL_INTFS_FILES :=	hal/hal_intf.o \
 			hal/hal_hci/hal_$(HCI_NAME).o \
 			hal/led/hal_$(HCI_NAME)_led.o
 
-			
+
 _OUTSRC_FILES := hal/phydm/phydm_debug.o	\
 		hal/phydm/phydm_antdiv.o\
 		hal/phydm/phydm_antdect.o\
@@ -517,7 +529,7 @@ _OUTSRC_FILES += hal/phydm/rtl8821a/halhwimg8821a_fw.o\
 		hal/phydm/rtl8821a/phydm_rtl8821a.o\
 		hal/phydm/rtl8821a/phydm_iqk_8821a_ce.o\
 		hal/phydm/txbf/haltxbfjaguar.o
-		
+
 endif
 
 endif
@@ -609,7 +621,7 @@ _HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
 			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
 			hal/$(RTL871X)/$(RTL871X)_dm.o \
 			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
-			hal/$(RTL871X)/$(RTL871X)_cmd.o 
+			hal/$(RTL871X)/$(RTL871X)_cmd.o
 #			hal/$(RTL871X)/hal8814a_fw.o
 
 
@@ -1056,7 +1068,7 @@ EXTRA_CFLAGS += -DDM_ODM_SUPPORT_TYPE=0x04
 
 ifeq ($(CONFIG_PLATFORM_I386_PC), y)
 EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
-SUBARCH := $(shell uname -m | sed -e s/i.86/i386/)
+SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ | sed -e s/aarch64/arm64/ )
 ARCH ?= $(SUBARCH)
 CROSS_COMPILE ?=
 KVER  ?= $(shell uname -r)
@@ -1284,9 +1296,13 @@ endif
 
 ifeq ($(CONFIG_PLATFORM_FS_MX61), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
+EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
 ARCH := arm
-CROSS_COMPILE := /home/share/CusEnv/FreeScale/arm-eabi-4.4.3/bin/arm-eabi-
-KSRC ?= /home/share/CusEnv/FreeScale/FS_kernel_env
+CROSS_COMPILE ?=
+KVER ?= $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
 endif
 
 ifeq ($(CONFIG_PLATFORM_ACTIONS_ATJ227X), y)
@@ -1541,6 +1557,17 @@ CROSS_COMPILE := /home/android_sdk/Allwinner/a20/kitkat-a20_v4.4/lichee/out/andr
 KSRC := /home/android_sdk/Allwinner/a20/kitkat-a20_v4.4/lichee/linux-3.4
 endif
 
+ifeq ($(CONFIG_PLATFORM_PPC), y)
+EXTRA_CFLAGS += -DCONFIG_BIG_ENDIAN
+SUBARCH := $(shell uname -m | sed -e s/ppc/powerpc/)
+ARCH ?= $(SUBARCH)
+CROSS_COMPILE ?=
+KVER ?= $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
+endif
+
 ifeq ($(CONFIG_PLATFORM_ARM_SUN8I_W3P1), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
 EXTRA_CFLAGS += -DCONFIG_PLATFORM_ARM_SUN8I
@@ -1714,11 +1741,24 @@ endif
 
 ifeq ($(CONFIG_PLATFORM_ARM_RPI), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
-ARCH := arm
-CROSS_COMPILE :=
+EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH ?= arm
+CROSS_COMPILE ?=
 KVER ?= $(shell uname -r)
-KSRC ?= /lib/modules/$(KVER)/build
+KSRC := /lib/modules/$(KVER)/build
 MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_ODROIDC2), y)
+EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
+EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH ?= arm64
+CROSS_COMPILE ?=
+KVER ?= $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
 endif
 
 ifeq ($(CONFIG_PLATFORM_RTK129X), y)
@@ -1774,7 +1814,7 @@ ARCH := arm
 CROSS_COMPILE := /home/android_sdk/Telechips/v13.05_r1-tcc-android-4.2.2_tcc893x-evm_build/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
 KSRC := /home/android_sdk/Telechips/v13.05_r1-tcc-android-4.2.2_tcc893x-evm_build/kernel
 MODULE_NAME := wlan
-endif 
+endif
 
 # ARM64 - odroid-c2 and such
 ifeq ($(CONFIG_PLATFORM_ARM64), y)
@@ -1837,7 +1877,7 @@ rtk_core :=	core/rtw_cmd.o \
 		core/rtw_btcoex.o \
 		core/rtw_beamforming.o \
 		core/rtw_odm.o \
-		core/efuse/rtw_efuse.o 
+		core/efuse/rtw_efuse.o
 
 ifeq ($(CONFIG_SDIO_HCI), y)
 rtk_core += core/rtw_sdio.o
