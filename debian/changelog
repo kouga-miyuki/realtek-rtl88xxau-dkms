@@ -1,3 +1,15 @@
+realtek-rtl88xxau-dkms (5.1.5~20180513-0kali1) kali-dev; urgency=medium
+
+  * Import new snapshot from git (see bug 4764)
+    - Fix an monitor/injection (FCS) issue on 8812 chipset
+    - Fix Odroid C2 (arm64) support
+    - Fix power saving breaking monitor mode
+    - ARM RPI fix added
+    - Fixed building on older kernels
+    - New USB VID/PIDs added
+
+ -- Sophie Brun <sophie@freexian.com>  Mon, 14 May 2018 09:28:57 +0200
+
 realtek-rtl88xxau-dkms (5.1.5~20180125-0kali1) kali-dev; urgency=medium
 
   * Import new snapshot form git (see bug 4510)
