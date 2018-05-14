@@ -15,8 +15,8 @@ void rtw_reg_notify_by_driver(_adapter *adapter)
 	return;
 }
 
-int rtw_regd_init(_adapter *padapter)
+int rtw_regd_init(_adapter * padapter)
 {
 	return 0;
 }
-#endif /* CONFIG_IOCTL_CFG80211 */
+#endif //CONFIG_IOCTL_CFG80211
