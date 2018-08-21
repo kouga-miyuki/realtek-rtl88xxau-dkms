@@ -1,2 +1,1 @@
-core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-5.1.5~20180513
-realtek-leds.conf etc/modprobe.d
+core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-5.2.20.2~20180812

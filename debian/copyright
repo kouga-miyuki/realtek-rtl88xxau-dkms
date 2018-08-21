@@ -3,7 +3,7 @@ Upstream-Name: rtl8812au
 Source: https://github.com/aircrack-ng/rtl8812au
 
 Files: *
-Copyright: 2007-2013 Realtek Corporation
+Copyright: 2007-2017 Realtek Corporation
 License: GPL-2
 
 Files: os_dep/linux/rtw_radiotap.c
