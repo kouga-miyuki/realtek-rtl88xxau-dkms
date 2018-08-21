@@ -1,3 +1,31 @@
+realtek-rtl88xxau-dkms (5.2.20.2~20180812-0kali1) kali-dev; urgency=medium
+
+  * Import new snapshot from git (see 4891)
+    - Update phydm to improve TP stability
+    - Support WiFi-HAL for Android 8
+    - Update PHYDM setting
+    - Update FW to v52.10
+    - Correct DFS master function
+    - Fixed WPA2 vulnerability - key reinstallation attacks(KRACKs)
+    - Remove test code
+    - Fix crash for BF function
+    - Fix wrong memory accesse
+    - Fix encrypt broadcast packet fail
+    - Fix crash for TDLS
+    - Update PHYDM setting
+    - Support PNO
+    - Fix WOW issue
+    - Fix efuse issue
+    - Sync channel plan document
+    - Fix DFS issue
+    - Support NAPI & GRO
+    - Enable Power by rate
+    - Fix MP power tracking issue
+    - Fix potential memory out of range
+    - Support CE-RED. 2G: ETSI v2.1.1 / 5G: ETSI v2.1.0
+
+ -- Sophie Brun <sophie@freexian.com>  Tue, 21 Aug 2018 14:57:36 +0200
+
 realtek-rtl88xxau-dkms (5.1.5~20180513-0kali1) kali-dev; urgency=medium
 
   * Import new snapshot from git (see bug 4764)
