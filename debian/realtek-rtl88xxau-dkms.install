@@ -1,1 +1,1 @@
-core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-5.2.20.2~20180812
+core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-5.2.20.2~20181106
