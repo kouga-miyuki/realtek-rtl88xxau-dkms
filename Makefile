@@ -26,6 +26,8 @@ ifeq ($(GCC_VER_49),1)
 EXTRA_CFLAGS += -Wno-date-time -Wno-error=date-time # Fix compile error && warning on gcc 4.9 and later
 endif
 
+EXTRA_CFLAGS += -Wno-vla
+
 EXTRA_CFLAGS += -I$(src)/include
 
 EXTRA_LDFLAGS += --strip-debug
@@ -182,7 +184,7 @@ endif
 
 ifeq ($(CONFIG_MP_VHT_HW_TX_MODE), y)
 EXTRA_CFLAGS += -DCONFIG_MP_VHT_HW_TX_MODE
-#endif
+endif
 
 ifeq ($(CONFIG_GSPI_HCI), y)
 HCI_NAME = gspi
@@ -568,6 +570,8 @@ endif
 endif
 
 ########### HAL_RTL8814A #################################
+ifeq ($(CONFIG_RTL8814A), y)
+
 RTL871X = rtl8814a
 ifeq ($(CONFIG_USB_HCI), y)
 MODULE_NAME = 8814au
@@ -1038,9 +1042,12 @@ EXTRA_CFLAGS += -DCONFIG_MP_VHT_HW_TX_MODE
 ifeq ($(CONFIG_PLATFORM_I386_PC), y)
 ## For I386 X86 ToolChain use Hardware FLOATING
 EXTRA_CFLAGS += -mhard-float
+EXTRA_CFLAGS += -DMARK_KERNEL_PFU
 else
 ## For ARM ToolChain use Hardware FLOATING
-EXTRA_CFLAGS += -mfloat-abi=hard
+# Raspbian kernel is with soft-float.
+# 'softfp' allows FP instructions, but no FP on function call interfaces
+EXTRA_CFLAGS += -mfloat-abi=softfp
 endif
 endif
 
