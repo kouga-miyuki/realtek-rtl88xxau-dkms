@@ -2,9 +2,9 @@ Source: realtek-rtl88xxau-dkms
 Section: contrib/kernel
 Priority: optional
 Maintainer: Kali Developers <devel@kali.org>
-Uploaders: Sophie Brun <sophie@freexian.com>
+Uploaders: Sophie Brun <sophie@offensive-security.com>
 Build-Depends: debhelper (>= 11), dkms
-Standards-Version: 4.2.0
+Standards-Version: 4.2.1
 Homepage: https://github.com/aircrack-ng/rtl8812au
 Vcs-Git: git://git.kali.org/gitweb/?p=packages/realtek-rtl88xxau-dkms.git
 Vcs-Browser: http://git.kali.org/gitweb/?p=packages/realtek-rtl88xxau-dkms.git;a=summary
