@@ -1,1 +1,2 @@
-core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-5.2.20.2~20181106
+#!/usr/bin/dh-exec
+core hal include Kconfig Makefile os_dep platform usr/src/realtek-rtl88xxau-${DEB_VERSION_UPSTREAM}
