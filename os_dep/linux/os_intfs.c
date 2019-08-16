@@ -88,8 +88,8 @@ MODULE_PARM_DESC(rtw_lps_level, "The default LPS level");
 */
 int rtw_smart_ps = 2;
 
-#ifdef CONFIG_WMMPS_STA	
-/* WMMPS: 
+#ifdef CONFIG_WMMPS_STA
+/* WMMPS:
  * rtw_smart_ps = 0 => Only for fw test
  * rtw_smart_ps = 1 => Refer to Beacon's TIM Bitmap
  * rtw_smart_ps = 2 => Don't refer to Beacon's TIM Bitmap
@@ -1255,7 +1255,7 @@ static u16 rtw_select_queue(struct net_device *dev, struct sk_buff *skb
   #else
     , struct net_device *sb_dev
   #endif
-  #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(5, 2, 0))
 	  , select_queue_fallback_t fallback
   #endif
 #endif
