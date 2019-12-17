@@ -15,7 +15,6 @@ _PHYDM_FILES :=\
 	phydm/phydm_hwconfig.o\
 	phydm/phydm_dfs.o\
 	phydm/phydm_cfotracking.o\
-	phydm/phydm_acs.o\
 	phydm/phydm_adc_sampling.o\
 	phydm/phydm_ccx.o\
 	phydm/phydm_primary_cca.o\
@@ -75,7 +74,7 @@ ifeq ($(CONFIG_WLAN_HAL_8821CE),y)
 	_PHYDM_FILES += phydm/halrf/rtl8821c/halrf_8821c.o
 	_PHYDM_FILES += phydm/halrf/rtl8821c/halrf_iqk_8821c.o
 endif
-	
+
 ifeq ($(CONFIG_WLAN_HAL_8197F),y)
 		_PHYDM_FILES += phydm/halrf/rtl8197f/halrf_8197f.o
 		_PHYDM_FILES += phydm/halrf/rtl8197f/halrf_iqk_8197f.o

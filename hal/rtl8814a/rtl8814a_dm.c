@@ -203,7 +203,7 @@ dm_InitGPIOSetting(
 static void Init_ODM_ComInfo_8814(PADAPTER	Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct PHY_DM_STRUCT		*pDM_Odm = &(pHalData->odmpriv);
+	struct dm_struct		*pDM_Odm = &(pHalData->odmpriv);
 	u8	cut_ver, fab_ver;
 
 	Init_ODM_ComInfo(Adapter);
@@ -240,7 +240,7 @@ rtl8814_InitHalDm(
 	)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct PHY_DM_STRUCT		*		pDM_Odm = &(pHalData->odmpriv);
+	struct dm_struct		*		pDM_Odm = &(pHalData->odmpriv);
 	u8	i;
 
 #ifdef CONFIG_USB_HCI
@@ -262,7 +262,7 @@ rtl8814_HalDmWatchDog(
 	BOOLEAN		bFwCurrentInPSMode = _FALSE;
 	BOOLEAN		bFwPSAwake = _TRUE;
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct PHY_DM_STRUCT		*pDM_Odm = &(pHalData->odmpriv);
+	struct dm_struct		*pDM_Odm = &(pHalData->odmpriv);
 
 
 	if (!rtw_is_hw_init_completed(Adapter))
@@ -318,7 +318,7 @@ skip_dm:
 void rtl8814_init_dm_priv(IN PADAPTER Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct PHY_DM_STRUCT		*podmpriv = &pHalData->odmpriv;
+	struct dm_struct		*podmpriv = &pHalData->odmpriv;
 
 	/* _rtw_spinlock_init(&(pHalData->odm_stainfo_lock)); */
 
@@ -334,7 +334,7 @@ void rtl8814_init_dm_priv(IN PADAPTER Adapter)
 #endif
 
 	Init_ODM_ComInfo_8814(Adapter);
-	odm_init_all_timers(podmpriv );	
+	odm_init_all_timers(podmpriv );
 	//PHYDM_InitDebugSetting(podmpriv);
 
 	pHalData->CurrentTxPwrIdx = 18;
@@ -344,7 +344,7 @@ void rtl8814_init_dm_priv(IN PADAPTER Adapter)
 void rtl8814_deinit_dm_priv(IN PADAPTER Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct PHY_DM_STRUCT		*podmpriv = &pHalData->odmpriv;
+	struct dm_struct		*podmpriv = &pHalData->odmpriv;
 	/* _rtw_spinlock_free(&pHalData->odm_stainfo_lock); */
 	odm_cancel_all_timers(podmpriv);
 }
@@ -377,7 +377,7 @@ u8 AntDivBeforeLink8814(PADAPTER Adapter )
 {
 	
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);	
-	struct PHY_DM_STRUCT		* 	pDM_Odm =&pHalData->odmpriv;
+	struct dm_struct		* 	pDM_Odm =&pHalData->odmpriv;
 	SWAT_T		*pDM_SWAT_Table = &pDM_Odm->DM_SWAT_Table;
 	struct mlme_priv	*pmlmepriv = &(Adapter->mlmepriv);
 	

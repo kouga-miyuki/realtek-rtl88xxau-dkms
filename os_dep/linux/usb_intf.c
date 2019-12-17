@@ -63,12 +63,12 @@ static void rtw_dev_shutdown(struct device *dev)
 					#ifdef CONFIG_WOWLAN
 					#ifdef CONFIG_GPIO_WAKEUP
 					/*default wake up pin change to BT*/
-					RTW_INFO("%s:default wake up pin change to BT\n", __FUNCTION__);
+					RTW_INFO("%s:default wake up pin change to BT\n", __func__);
 					rtw_hal_switch_gpio_wl_ctrl(adapter, WAKEUP_GPIO_IDX, _FALSE);
 					#endif /* CONFIG_GPIO_WAKEUP */
 
 					if (pwrctl->wowlan_mode == _TRUE)
-						RTW_PRINT("%s wowlan_mode ==_TRUE do not run rtw_hal_deinit()\n", __FUNCTION__);
+						RTW_PRINT("%s wowlan_mode ==_TRUE do not run rtw_hal_deinit()\n", __func__);
 					else
 					#endif
 					{
@@ -243,7 +243,6 @@ static struct usb_device_id rtw_usb_id_tbl[] = {
 #endif /* CONFIG_RTL8703B */
 
 #ifdef CONFIG_RTL8814A
-
 	{USB_DEVICE(USB_VENDER_ID_REALTEK, 0x8813), .driver_info = RTL8814A},
 	{USB_DEVICE(0x2001, 0x331A), .driver_info = RTL8814A}, /* D-Link - D-Link */
 	{USB_DEVICE(0x0B05, 0x1817), .driver_info = RTL8814A}, /* ASUS - ASUSTeK */
@@ -269,6 +268,8 @@ static struct usb_device_id rtw_usb_id_tbl[] = {
 	/*=== Realtek demoboard ===*/
 	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0xB82C, 0xff, 0xff, 0xff), .driver_info = RTL8822B}, /* Default ID for USB multi-function */
 	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0xB812, 0xff, 0xff, 0xff), .driver_info = RTL8822B}, /* Default ID for USB Single-function, WiFi only */
+	/*=== Customer ID ===*/
+	{USB_DEVICE_AND_INTERFACE_INFO(0x13b1, 0x0043, 0xff, 0xff, 0xff), .driver_info = RTL8822B}, /* Alpha - Alpha*/
 #endif /* CONFIG_RTL8822B */
 
 #ifdef CONFIG_RTL8723D
@@ -697,6 +698,7 @@ static int usb_reprobe_switch_usb_mode(PADAPTER Adapter)
 		goto exit;
 
 	rtw_hal_set_hwreg(Adapter, HW_VAR_USB_MODE, &ret);
+
 exit:
 	return ret;
 }
@@ -825,7 +827,7 @@ static void process_spec_devid(const struct usb_device_id *pdid)
 		if ((pdid->idVendor == vid) && (pdid->idProduct == pid) && (flags & SPEC_DEV_ID_ASSIGN_IFNAME)) {
 			extern char *ifname;
 			strncpy(ifname, "wlan10", 6);
-			/* RTW_INFO("%s()-%d: ifname=%s, vid=%04X, pid=%04X\n", __FUNCTION__, __LINE__, ifname, vid, pid); */
+			/* RTW_INFO("%s()-%d: ifname=%s, vid=%04X, pid=%04X\n", __func__, __LINE__, ifname, vid, pid); */
 		}
 #endif /* RTK_DMP_PLATFORM */
 
@@ -900,7 +902,7 @@ int rtw_hw_suspend(_adapter *padapter)
 	return 0;
 
 error_exit:
-	RTW_INFO("%s, failed\n", __FUNCTION__);
+	RTW_INFO("%s, failed\n", __func__);
 	return -1;
 
 }
@@ -935,7 +937,7 @@ int rtw_hw_resume(_adapter *padapter)
 
 	return 0;
 error_exit:
-	RTW_INFO("%s, Open net dev failed\n", __FUNCTION__);
+	RTW_INFO("%s, Open net dev failed\n", __func__);
 	return -1;
 }
 #endif
@@ -955,7 +957,7 @@ static int rtw_suspend(struct usb_interface *pusb_intf, pm_message_t message)
 	padapter = dvobj_get_primary_adapter(dvobj);
 
 	if (pwrpriv->bInSuspend == _TRUE) {
-		RTW_INFO("%s bInSuspend = %d\n", __FUNCTION__, pwrpriv->bInSuspend);
+		RTW_INFO("%s bInSuspend = %d\n", __func__, pwrpriv->bInSuspend);
 		pdbgpriv->dbg_suspend_error_cnt++;
 		goto exit;
 	}
@@ -991,7 +993,7 @@ int rtw_resume_process(_adapter *padapter)
 
 	if (pwrpriv->bInSuspend == _FALSE) {
 		pdbgpriv->dbg_resume_error_cnt++;
-		RTW_INFO("%s bInSuspend = %d\n", __FUNCTION__, pwrpriv->bInSuspend);
+		RTW_INFO("%s bInSuspend = %d\n", __func__, pwrpriv->bInSuspend);
 		return -1;
 	}
 
@@ -1068,13 +1070,13 @@ static int rtw_resume(struct usb_interface *pusb_intf)
 	padapter = dvobj_get_primary_adapter(dvobj);
 	pmlmeext = &padapter->mlmeextpriv;
 
-	RTW_INFO("==> %s (%s:%d)\n", __FUNCTION__, current->comm, current->pid);
+	RTW_INFO("==> %s (%s:%d)\n", __func__, current->comm, current->pid);
 	pdbgpriv->dbg_resume_cnt++;
 
 	#ifdef CONFIG_AUTOSUSPEND
 	if (pwrpriv->bInternalAutoSuspend)
 		ret = rtw_resume_process(padapter);
-	else 
+	else
 	#endif
 	{
 		if (pwrpriv->wowlan_mode || pwrpriv->wowlan_ap_mode) {
@@ -1098,7 +1100,7 @@ static int rtw_resume(struct usb_interface *pusb_intf)
 	}
 
 	pmlmeext->last_scan_time = rtw_get_current_time();
-	RTW_INFO("<========  %s return %d\n", __FUNCTION__, ret);
+	RTW_INFO("<========  %s return %d\n", __func__, ret);
 
 	return ret;
 }
@@ -1283,6 +1285,11 @@ _adapter *rtw_usb_primary_adapter_init(struct dvobj_priv *dvobj,
 	/* step usb endpoint mapping */
 	rtw_hal_chip_configure(padapter);
 
+#ifdef CONFIG_BT_COEXIST
+	rtw_btcoex_Initialize(padapter);
+#endif
+	rtw_btcoex_wifionly_initialize(padapter);
+
 	/* step read efuse/eeprom data and get mac_addr */
 	if (rtw_hal_read_chip_info(padapter) == _FAIL)
 		goto free_hal_data;
@@ -1291,15 +1298,6 @@ _adapter *rtw_usb_primary_adapter_init(struct dvobj_priv *dvobj,
 	if (rtw_init_drv_sw(padapter) == _FAIL) {
 		goto free_hal_data;
 	}
-
-#ifdef CONFIG_BT_COEXIST
-	if (GET_HAL_DATA(padapter)->EEPROMBluetoothCoexist)
-		rtw_btcoex_Initialize(padapter);
-	else
-		rtw_btcoex_wifionly_initialize(padapter);
-#else /* !CONFIG_BT_COEXIST */
-	rtw_btcoex_wifionly_initialize(padapter);
-#endif /* CONFIG_BT_COEXIST */
 
 #ifdef CONFIG_PM
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 18))
@@ -1332,9 +1330,9 @@ _adapter *rtw_usb_primary_adapter_init(struct dvobj_priv *dvobj,
 			/* usb_autopm_get_interface(adapter_to_dvobj(padapter)->pusbintf ); */ /* init pm_usage_cnt ,let it start from 1 */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 32))
-			RTW_INFO("%s...pm_usage_cnt(%d).....\n", __FUNCTION__, atomic_read(&(dvobj->pusbintf->pm_usage_cnt)));
+			RTW_INFO("%s...pm_usage_cnt(%d).....\n", __func__, atomic_read(&(dvobj->pusbintf->pm_usage_cnt)));
 #else
-			RTW_INFO("%s...pm_usage_cnt(%d).....\n", __FUNCTION__, dvobj->pusbintf->pm_usage_cnt);
+			RTW_INFO("%s...pm_usage_cnt(%d).....\n", __func__, dvobj->pusbintf->pm_usage_cnt);
 #endif
 		}
 	}
@@ -1557,7 +1555,7 @@ static void rtw_dev_remove(struct usb_interface *pusb_intf)
 	/*else
 	{
 
-		padapter->HalData->hw_init_completed = _FALSE;
+		rtw_set_hw_init_completed(padapter, _FALSE);
 	}*/
 
 
@@ -1619,7 +1617,7 @@ static int __init rtw_drv_entry(void)
 #endif /* BTCOEXVERSION */
 
 	if (ret != 0) {
-		RTW_INFO("%s: power on failed!!(%d)\n", __FUNCTION__, ret);
+		RTW_INFO("%s: power on failed!!(%d)\n", __func__, ret);
 		ret = -1;
 		goto exit;
 	}

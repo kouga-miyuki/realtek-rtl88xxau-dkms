@@ -20,7 +20,7 @@
 #if (RTL8814A_SUPPORT == 1)
 static BOOLEAN
 CheckPositive(
-	struct PHY_DM_STRUCT    *pDM_Odm,
+	struct dm_struct    *pDM_Odm,
 	u32  Condition1,
 	u32  Condition2,
 	u32  Condition3,
@@ -102,7 +102,7 @@ u4Byte    driver3 = 0;
 }
 static BOOLEAN
 CheckNegative(
-	struct PHY_DM_STRUCT    *pDM_Odm,
+	struct dm_struct    *pDM_Odm,
 	u32  Condition1,
 	u32  Condition2
 )
@@ -263,7 +263,7 @@ u4Byte Array_MP_8814A_MAC_REG[] = {
 
 void
 odm_read_and_config_mp_8814a_mac_reg(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i         = 0;

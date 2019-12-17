@@ -80,11 +80,11 @@
 #ifdef CONFIG_SINGLE_XMIT_BUF
 	#define NR_XMIT_EXTBUFF	(1)
 #else
-	#define NR_XMIT_EXTBUFF	(64)
+	#define NR_XMIT_EXTBUFF	(32)
 #endif
 
 #ifdef CONFIG_RTL8812A
-	#define MAX_CMDBUF_SZ	(512 * 17)
+	#define MAX_CMDBUF_SZ	(512 * 18)
 #elif defined(CONFIG_RTL8723D) && defined(CONFIG_LPS_POFF)
 	#define MAX_CMDBUF_SZ	(128*70) /*(8960)*/
 #else
@@ -119,16 +119,17 @@
 
 #define WEP_IV(pattrib_iv, dot11txpn, keyidx)\
 	do {\
+		dot11txpn.val = (dot11txpn.val == 0xffffff) ? 0 : (dot11txpn.val + 1);\
 		pattrib_iv[0] = dot11txpn._byte_.TSC0;\
 		pattrib_iv[1] = dot11txpn._byte_.TSC1;\
 		pattrib_iv[2] = dot11txpn._byte_.TSC2;\
 		pattrib_iv[3] = ((keyidx & 0x3)<<6);\
-		dot11txpn.val = (dot11txpn.val == 0xffffff) ? 0 : (dot11txpn.val+1);\
 	} while (0)
 
 
 #define TKIP_IV(pattrib_iv, dot11txpn, keyidx)\
 	do {\
+		dot11txpn.val = dot11txpn.val == 0xffffffffffffULL ? 0 : (dot11txpn.val + 1);\
 		pattrib_iv[0] = dot11txpn._byte_.TSC1;\
 		pattrib_iv[1] = (dot11txpn._byte_.TSC1 | 0x20) & 0x7f;\
 		pattrib_iv[2] = dot11txpn._byte_.TSC0;\
@@ -137,11 +138,11 @@
 		pattrib_iv[5] = dot11txpn._byte_.TSC3;\
 		pattrib_iv[6] = dot11txpn._byte_.TSC4;\
 		pattrib_iv[7] = dot11txpn._byte_.TSC5;\
-		dot11txpn.val = dot11txpn.val == 0xffffffffffffULL ? 0 : (dot11txpn.val+1);\
 	} while (0)
 
 #define AES_IV(pattrib_iv, dot11txpn, keyidx)\
 	do {\
+		dot11txpn.val = dot11txpn.val == 0xffffffffffffULL ? 0 : (dot11txpn.val + 1);\
 		pattrib_iv[0] = dot11txpn._byte_.TSC0;\
 		pattrib_iv[1] = dot11txpn._byte_.TSC1;\
 		pattrib_iv[2] = 0;\
@@ -150,7 +151,6 @@
 		pattrib_iv[5] = dot11txpn._byte_.TSC3;\
 		pattrib_iv[6] = dot11txpn._byte_.TSC4;\
 		pattrib_iv[7] = dot11txpn._byte_.TSC5;\
-		dot11txpn.val = dot11txpn.val == 0xffffffffffffULL ? 0 : (dot11txpn.val+1);\
 	} while (0)
 
 /* Check if AMPDU Tx is supported or not. If it is supported,
@@ -425,6 +425,17 @@ struct pkt_attrib {
 	u8	src[ETH_ALEN];
 	u8	ta[ETH_ALEN];
 	u8	ra[ETH_ALEN];
+#ifdef CONFIG_RTW_MESH
+	u8	mda[ETH_ALEN];	/* mesh da */
+	u8	msa[ETH_ALEN];	/* mesh sa */
+	u8	meshctrl_len;	/* Length of Mesh Control field */
+	u8	mesh_frame_mode;
+	#if CONFIG_RTW_MESH_DATA_BMC_TO_UC
+	u8 mb2u;
+	#endif
+	u8 mfwd_ttl;
+	u32 mseq;
+#endif
 	u8	key_idx;
 	u8	qos_en;
 	u8	ht_en;
@@ -483,9 +494,16 @@ struct pkt_attrib {
 	 */
 	u8 bf_pkt_type;
 #endif
-    u8  inject; /* == a5 if injected */
+
+	u8 inject; /* == a5 if injected */
 
 };
+#endif
+
+#ifdef CONFIG_RTW_MESH
+#define XATTRIB_GET_MCTRL_LEN(xattrib) ((xattrib)->meshctrl_len)
+#else
+#define XATTRIB_GET_MCTRL_LEN(xattrib) 0
 #endif
 
 #ifdef CONFIG_TX_AMSDU
@@ -632,10 +650,15 @@ struct xmit_frame {
 	_list	list;
 
 	struct pkt_attrib attrib;
-	struct sk_buff *pkt;
+
+	_pkt *pkt;
+
 	int	frame_tag;
+
 	_adapter *padapter;
+
 	u8	*buf_addr;
+
 	struct xmit_buf *pxmitbuf;
 
 #if defined(CONFIG_SDIO_HCI) || defined(CONFIG_GSPI_HCI)
@@ -918,10 +941,10 @@ extern struct xmit_frame *rtw_dequeue_xframe(struct xmit_priv *pxmitpriv, struct
 extern s32 rtw_xmit_classifier(_adapter *padapter, struct xmit_frame *pxmitframe);
 extern u32 rtw_calculate_wlan_pkt_size_by_attribue(struct pkt_attrib *pattrib);
 #define rtw_wlan_pkt_size(f) rtw_calculate_wlan_pkt_size_by_attribue(&f->attrib)
-extern s32 rtw_xmitframe_coalesce(_adapter *padapter, struct sk_buff *pkt, struct xmit_frame *pxmitframe);
-#ifdef CONFIG_IEEE80211W
-extern s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, struct sk_buff *pkt, struct xmit_frame *pxmitframe);
-#endif /* CONFIG_IEEE80211W */
+extern s32 rtw_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame *pxmitframe);
+#if defined(CONFIG_IEEE80211W) || defined(CONFIG_RTW_MESH)
+extern s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame *pxmitframe);
+#endif
 #ifdef CONFIG_TDLS
 extern struct tdls_txmgmt *ptxmgmt;
 s32 rtw_xmit_tdls_coalesce(_adapter *padapter, struct xmit_frame *pxmitframe, struct tdls_txmgmt *ptxmgmt);
@@ -945,7 +968,8 @@ void rtw_free_hwxmits(_adapter *padapter);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24))
 s32 rtw_monitor_xmit_entry(struct sk_buff *skb, struct net_device *ndev);
 #endif
-s32 rtw_xmit(_adapter *padapter, struct sk_buff **pkt);
+s32 rtw_xmit_posthandle(_adapter *padapter, struct xmit_frame *pxmitframe, _pkt *pkt);
+s32 rtw_xmit(_adapter *padapter, _pkt **pkt);
 bool xmitframe_hiq_filter(struct xmit_frame *xmitframe);
 #if defined(CONFIG_AP_MODE) || defined(CONFIG_TDLS)
 sint xmitframe_enqueue_for_sleeping_sta(_adapter *padapter, struct xmit_frame *pxmitframe);
@@ -974,7 +998,7 @@ void enqueue_pending_xmitbuf_to_head(struct xmit_priv *pxmitpriv, struct xmit_bu
 struct xmit_buf	*dequeue_pending_xmitbuf(struct xmit_priv *pxmitpriv);
 struct xmit_buf	*select_and_dequeue_pending_xmitbuf(_adapter *padapter);
 sint	check_pending_xmitbuf(struct xmit_priv *pxmitpriv);
-int	rtw_xmit_thread(void *context);
+thread_return	rtw_xmit_thread(thread_context context);
 #endif
 
 #ifdef CONFIG_TX_AMSDU

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2007 - 2017 Realtek Corporation.
+ * Copyright(c) 2007 - 2017  Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -8,8 +8,18 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
+ *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
  *
  *****************************************************************************/
 #ifndef __ODM_TYPES_H__
@@ -31,11 +41,11 @@
 #define	ODM_ENDIAN_LITTLE	1
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	#define GET_PDM_ODM(__padapter)	((struct PHY_DM_STRUCT*)(&((GET_HAL_DATA(__padapter))->DM_OutSrc)))
+	#define GET_PDM_ODM(__padapter)	((struct dm_struct*)(&(GET_HAL_DATA(__padapter))->DM_OutSrc))
 #elif (DM_ODM_SUPPORT_TYPE == ODM_CE)
-	#define GET_PDM_ODM(__padapter)	((struct PHY_DM_STRUCT*)(&((GET_HAL_DATA(__padapter))->odmpriv)))
+	#define GET_PDM_ODM(__padapter)	((struct dm_struct*)(&(GET_HAL_DATA(__padapter))->odmpriv))
 #elif (DM_ODM_SUPPORT_TYPE == ODM_AP)
-	#define GET_PDM_ODM(__padapter)	((struct PHY_DM_STRUCT*)(&(__padapter->pshare->_dmODM)))
+	#define GET_PDM_ODM(__padapter)	((struct dm_struct*)(&__padapter->pshare->_dmODM))
 #endif
 
 #if (DM_ODM_SUPPORT_TYPE != ODM_WIN)
@@ -114,7 +124,6 @@ enum rt_spinlock_type {
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 	#define sta_info 	_RT_WLAN_STA
 	#define	__func__		__FUNCTION__
-	#define	PHYDM_TESTCHIP_SUPPORT	TESTCHIP_SUPPORT
 	#define MASKH3BYTES			0xffffff00
 	#define SUCCESS	0
 	#define FAIL	(-1)
@@ -131,8 +140,8 @@ enum rt_spinlock_type {
 	#define	u64		u8Byte
 	#define	s64		s8Byte
 
-	#define	timer_list	_RT_TIMER
-	
+	#define	phydm_timer_list	_RT_TIMER
+
 
 #elif (DM_ODM_SUPPORT_TYPE == ODM_AP)
 	#include "../typedef.h"
@@ -141,14 +150,10 @@ enum rt_spinlock_type {
 		#define DEV_BUS_TYPE		RT_PCI_INTERFACE
 	#endif
 
-	#if (defined(TESTCHIP_SUPPORT))
-		#define	PHYDM_TESTCHIP_SUPPORT 1
-	#else
-		#define	PHYDM_TESTCHIP_SUPPORT 0
-	#endif
-
 	#define	sta_info stat_info
 	#define	boolean	bool
+
+	#define	phydm_timer_list	timer_list
 
 #elif (DM_ODM_SUPPORT_TYPE == ODM_CE) && defined(DM_ODM_CE_MAC80211)
 
@@ -169,29 +174,14 @@ enum rt_spinlock_type {
 	#define	FOR_BRAZIL_PRETEST 0
 	#define	FPGA_TWO_MAC_VERIFICATION	0
 	#define	RTL8881A_SUPPORT	0
-	#define	PHYDM_TESTCHIP_SUPPORT 0
 
-	/* support list */
-	#define RTL8188E_SUPPORT				0
-	#define RTL8812A_SUPPORT				0
-	#define RTL8821A_SUPPORT				0
-	#define RTL8723B_SUPPORT				0
-	#define RTL8723D_SUPPORT				0
-	#define RTL8192E_SUPPORT				0
-	#define RTL8814A_SUPPORT				0
-	#define RTL8195A_SUPPORT				0
-	#define RTL8197F_SUPPORT				0
-	#define RTL8703B_SUPPORT				0
-	#define RTL8188F_SUPPORT				0
-	#define RTL8822B_SUPPORT				1
-	#define RTL8821B_SUPPORT				0
-	#define RTL8821C_SUPPORT				0
 
 	#define RATE_ADAPTIVE_SUPPORT			0
 	#define POWER_TRAINING_ACTIVE			0
 
 	#define sta_info	rtl_sta_info
 	#define	boolean		bool
+	#define	phydm_timer_list	rtw_timer_list
 
 #elif (DM_ODM_SUPPORT_TYPE == ODM_CE)
 	#include <drv_types.h>
@@ -225,11 +215,7 @@ enum rt_spinlock_type {
 	#define	FPGA_TWO_MAC_VERIFICATION	0
 	#define	RTL8881A_SUPPORT	0
 
-	#if (defined(TESTCHIP_SUPPORT))
-		#define	PHYDM_TESTCHIP_SUPPORT 1
-	#else
-		#define	PHYDM_TESTCHIP_SUPPORT 0
-	#endif
+	#define	phydm_timer_list	rtw_timer_list
 #endif
 
 #define READ_NEXT_PAIR(v1, v2, i) do { if (i+2 >= array_len) break; i += 2; v1 = array[i]; v2 = array[i+1]; } while (0)
