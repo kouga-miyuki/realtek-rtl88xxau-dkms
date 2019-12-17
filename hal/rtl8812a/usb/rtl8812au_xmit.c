@@ -104,7 +104,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz , u8 ba
 	/* RTW_INFO("%s, pkt_offset=0x%02x\n",__FUNCTION__,pxmitframe->pkt_offset); */
 	/* pkt_offset, unit:8 bytes padding */
 	if (pxmitframe->pkt_offset > 0)
-		SET_TX_DESC_PKT_OFFSET_8812(ptxdesc, pxmitframe->pkt_offset);
+	SET_TX_DESC_PKT_OFFSET_8812(ptxdesc, pxmitframe->pkt_offset);
 
 	SET_TX_DESC_MACID_8812(ptxdesc, pattrib->mac_id);
 	SET_TX_DESC_RATE_ID_8812(ptxdesc, pattrib->raid);
@@ -115,40 +115,41 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz , u8 ba
 
 	if (!pattrib->qos_en) {
 		SET_TX_DESC_HWSEQ_EN_8812(ptxdesc, 1); /* Hw set sequence number */
-	} else
+	} else {
 		SET_TX_DESC_SEQ_8812(ptxdesc, pattrib->seqnum);
-
+	}
 	/* injected frame */
-	if(pattrib->inject == 0xa5) {
+	if (pattrib->inject == 0xa5) {
 		SET_TX_DESC_RETRY_LIMIT_ENABLE_8812(ptxdesc, 1);
 		if (pattrib->retry_ctrl == _TRUE) {
 			SET_TX_DESC_DATA_RETRY_LIMIT_8812(ptxdesc, 6);
 		} else {
 			SET_TX_DESC_DATA_RETRY_LIMIT_8812(ptxdesc, 0);
 		}
-		if(pattrib->sgi == _TRUE) {
+		if (pattrib->sgi == _TRUE) {
 			SET_TX_DESC_DATA_SHORT_8812(ptxdesc, 1);
 		} else {
 			SET_TX_DESC_DATA_SHORT_8812(ptxdesc, 0);
 		}
 
-		SET_TX_DESC_DISABLE_FB_8812(ptxdesc, 1); // svpcom: ?
-		SET_TX_DESC_USE_RATE_8812(ptxdesc, 1);
-		SET_TX_DESC_TX_RATE_8812(ptxdesc, MRateToHwRate(pattrib->rate));
+			SET_TX_DESC_DISABLE_FB_8812(ptxdesc, 1); // svpcom: ?
+			SET_TX_DESC_USE_RATE_8812(ptxdesc, 1);
+			SET_TX_DESC_TX_RATE_8812(ptxdesc, MRateToHwRate(pattrib->rate));
 
 		if (pattrib->ldpc)
 			SET_TX_DESC_DATA_LDPC_8812(ptxdesc, 1);
-		SET_TX_DESC_DATA_STBC_8812(ptxdesc, pattrib->stbc & 3);
-		//SET_TX_DESC_GF_8812(ptxdesc, 1); // no MCS rates if sets, GreenField?
-		//SET_TX_DESC_LSIG_TXOP_EN_8812(ptxdesc, 1);
-		//SET_TX_DESC_HTC_8812(ptxdesc, 1);
-		//SET_TX_DESC_NO_ACM_8812(ptxdesc, 1);
-		SET_TX_DESC_DATA_BW_8812(ptxdesc, pattrib->bwmode); // 0 - 20 MHz, 1 - 40 MHz, 2 - 80 MHz
+			SET_TX_DESC_DATA_STBC_8812(ptxdesc, pattrib->stbc & 3);
+			//SET_TX_DESC_GF_8812(ptxdesc, 1); // no MCS rates if sets, GreenField?
+			//SET_TX_DESC_LSIG_TXOP_EN_8812(ptxdesc, 1);
+			//SET_TX_DESC_HTC_8812(ptxdesc, 1);
+			//SET_TX_DESC_NO_ACM_8812(ptxdesc, 1);
+			SET_TX_DESC_DATA_BW_8812(ptxdesc, pattrib->bwmode); // 0 - 20 MHz, 1 - 40 MHz, 2 - 80 MHz
+		}
 
-	} else if ((pxmitframe->frame_tag & 0x0f) == DATA_FRAMETAG) {
-		/* RTW_INFO("pxmitframe->frame_tag == DATA_FRAMETAG\n");		 */
+		if ((pxmitframe->frame_tag & 0x0f) == DATA_FRAMETAG) {
+			/* RTW_INFO("pxmitframe->frame_tag == DATA_FRAMETAG\n"); */
 
-		rtl8812a_fill_txdesc_sectype(pattrib, ptxdesc);
+			rtl8812a_fill_txdesc_sectype(pattrib, ptxdesc);
 #if defined(CONFIG_CONCURRENT_MODE)
 		if (bmcst)
 			fill_txdesc_force_bmc_camid(pattrib, ptxdesc);
@@ -346,7 +347,8 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz , u8 ba
 	}
 
 #ifdef CONFIG_ANTENNA_DIVERSITY
-	odm_set_tx_ant_by_tx_info(&pHalData->odmpriv, ptxdesc, pxmitframe->attrib.mac_id);
+	if (!bmcst && pattrib->psta)
+		odm_set_tx_ant_by_tx_info(adapter_to_phydm(padapter), ptxdesc, pattrib->psta->cmn.mac_id);
 #endif
 
 #ifdef CONFIG_BEAMFORMING
@@ -442,7 +444,7 @@ u32 upload_txpktbuf_8812au(_adapter *adapter, u8 *buf, u32 buflen)
 		}
 		rtw_write32(adapter, REG_PKTBUF_DBG_CTRL, 0xff800000+(beacon_head<<6) + qw_addr);
 		loop_cnt = 0;
-		while ((rtw_read32(adapter, REG_PKTBUF_DBG_CTRL) & BIT23) == 1) {
+		while ((rtw_read32(adapter, REG_PKTBUF_DBG_CTRL) & BIT23) != 0) {
 			rtw_udelay_os(10);
 			if (loop_cnt++ == 100)
 				return _FALSE;
@@ -1128,8 +1130,7 @@ s32 rtl8812au_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	ptxdesc->txdw3 |= cpu_to_le32((8 << 28)); /* set bit3 to 1. Suugested by TimChen. 2009.12.29. */
 
 
-	//rtl8188eu_cal_txdesc_chksum(ptxdesc);
-	rtl8812au_cal_txdesc_chksum(ptxdesc);
+	rtl8812eu_cal_txdesc_chksum(ptxdesc);
 	/* ----- end of fill tx desc ----- */
 
 	/*  */
@@ -1147,7 +1148,7 @@ s32 rtl8812au_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	pipe = usb_sndbulkpipe(pdvobj->pusbdev, pHalData->Queue2EPNum[(u8)MGT_QUEUE_INX] & 0x0f);
 
 	usb_fill_bulk_urb(urb, pdvobj->pusbdev, pipe,
-		pxmit_skb->data, pxmit_skb->len, rtl8812au_hostap_mgnt_xmit_cb, pxmit_skb);
+	pxmit_skb->data, pxmit_skb->len, rtl8192cu_hostap_mgnt_xmit_cb, pxmit_skb);
 
 	urb->transfer_flags |= URB_ZERO_PACKET;
 	usb_anchor_urb(urb, &phostapdpriv->anchored);

@@ -96,21 +96,6 @@ typedef enum _RT_AMPDU_BRUST_MODE {
 #define MAX_BASE_NUM_IN_PHY_REG_PG_2_4G			10 /* CCK:1, OFDM:1, HT:4, VHT:4 */
 #define MAX_BASE_NUM_IN_PHY_REG_PG_5G			9 /* OFDM:1, HT:4, VHT:4 */
 
-
-/* ###### duplicate code,will move to ODM ######### */
-/* #define IQK_MAC_REG_NUM		4 */
-/* #define IQK_ADDA_REG_NUM		16 */
-
-/* #define IQK_BB_REG_NUM			10 */
-#define IQK_BB_REG_NUM_92C	9
-#define IQK_BB_REG_NUM_92D	10
-#define IQK_BB_REG_NUM_test	6
-
-#define IQK_Matrix_Settings_NUM_92D	(1+24+21)
-
-/* #define HP_THERMAL_NUM		8 */
-/* ###### duplicate code,will move to ODM ######### */
-
 #ifdef RTW_RX_AGGREGATION
 typedef enum _RX_AGG_MODE {
 	RX_AGG_DISABLE,
@@ -207,9 +192,6 @@ typedef struct _BB_INIT_REGISTER {
 #define MACADDR_FILE_FAILED 1
 #define MACADDR_FILE_LOADED 2
 
-#define KFREE_FLAG_ON				BIT(0)
-#define KFREE_FLAG_THERMAL_K_ON		BIT(1)
-
 #define MAX_IQK_INFO_BACKUP_CHNL_NUM	5
 #define MAX_IQK_INFO_BACKUP_REG_NUM		10
 
@@ -244,6 +226,9 @@ struct hal_spec_t {
 	u8 port_num;
 	u8 proto_cap;	/* value of PROTO_CAP_XXX */
 	u8 wl_func;		/* value of WL_FUNC_XXX */
+
+	u8 pg_txpwr_saddr; /* starting address of PG tx power info */
+
 	u8 hci_type;	/* value of HCI Type */
 };
 
@@ -397,7 +382,6 @@ typedef struct hal_com_data {
 	u16	ForcedDataRate;	/* Force Data Rate. 0: Auto, 0x02: 1M ~ 0x6C: 54M. */
 	u8	bDumpRxPkt;
 	u8	bDumpTxPkt;
-	u8	bDisableTXPowerTraining;
 	u8	dis_turboedca;
 
 
@@ -538,7 +522,7 @@ typedef struct hal_com_data {
 	_lock		IQKSpinLock;
 	u8			INIDATA_RATE[MACID_NUM_SW_LIMIT];
 
-	struct PHY_DM_STRUCT	 odmpriv;
+	struct dm_struct	 odmpriv;
 	u64			bk_rf_ability;
 	u8			bIQKInitialized;
 	u8			bNeedIQK;
@@ -563,6 +547,8 @@ typedef struct hal_com_data {
 
 	u8	RegIQKFWOffload;
 	struct submit_ctx	iqk_sctx;
+	u8 ch_switch_offload;
+	struct submit_ctx chsw_sctx;
 
 	RT_AMPDU_BRUST		AMPDUBurstMode; /* 92C maybe not use, but for compile successfully */
 
@@ -698,6 +684,37 @@ typedef struct hal_com_data {
 	BT_COEXIST		bt_coexist;
 #endif /* CONFIG_BT_COEXIST */
 
+#if defined(CONFIG_RTL8723B) || defined(CONFIG_RTL8703B) \
+	|| defined(CONFIG_RTL8188F) || defined(CONFIG_RTL8723D)
+#ifndef CONFIG_PCI_HCI	/* mutual exclusive with PCI -- so they're SDIO and GSPI */
+	/* Interrupt relatd register information. */
+	u32			SysIntrStatus;
+	u32			SysIntrMask;
+#endif
+#endif /*endif CONFIG_RTL8723B	*/
+
+#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
+	char	para_file_buf[MAX_PARA_FILE_BUF_LEN];
+	char *mac_reg;
+	u32	mac_reg_len;
+	char *bb_phy_reg;
+	u32	bb_phy_reg_len;
+	char *bb_agc_tab;
+	u32	bb_agc_tab_len;
+	char *bb_phy_reg_pg;
+	u32	bb_phy_reg_pg_len;
+	char *bb_phy_reg_mp;
+	u32	bb_phy_reg_mp_len;
+	char *rf_radio_a;
+	u32	rf_radio_a_len;
+	char *rf_radio_b;
+	u32	rf_radio_b_len;
+	char *rf_tx_pwr_track;
+	u32	rf_tx_pwr_track_len;
+	char *rf_tx_pwr_lmt;
+	u32	rf_tx_pwr_lmt_len;
+#endif
+
 #ifdef CONFIG_BACKGROUND_NOISE_MONITOR
 	struct noise_monitor nm;
 #endif
@@ -711,6 +728,9 @@ typedef struct hal_com_data {
 	BOOLEAN				bCCKinCH14;
 	BB_INIT_REGISTER	RegForRecover[5];
 
+#if defined(CONFIG_PCI_HCI) && defined(RTL8814AE_SW_BCN)
+	BOOLEAN bCorrectBCN;
+#endif
 	u32 RxGainOffset[4]; /*{2G, 5G_Low, 5G_Middle, G_High}*/
 	u8 BackUp_IG_REG_4_Chnl_Section[4]; /*{A,B,C,D}*/
 
@@ -731,13 +751,16 @@ typedef struct hal_com_data {
 	u8 phydm_op_mode;
 
 	u8 in_cta_test;
+
+#ifdef CONFIG_RTW_LED
+	struct led_priv led;
+#endif
 } HAL_DATA_COMMON, *PHAL_DATA_COMMON;
 
-
-
 typedef struct hal_com_data HAL_DATA_TYPE, *PHAL_DATA_TYPE;
-#define GET_HAL_DATA(__pAdapter)			((HAL_DATA_TYPE *)((__pAdapter)->HalData))
+#define GET_HAL_DATA(__pAdapter)			((HAL_DATA_TYPE *)(((struct _ADAPTER*)__pAdapter)->HalData))
 #define GET_HAL_SPEC(__pAdapter)			(&(GET_HAL_DATA((__pAdapter))->hal_spec))
+#define adapter_to_led(adapter) (&(GET_HAL_DATA(adapter)->led))
 
 #define GET_HAL_RFPATH_NUM(__pAdapter)		(((HAL_DATA_TYPE *)((__pAdapter)->HalData))->NumTotalRFPath)
 #define RT_GetInterfaceSelection(_Adapter)		(GET_HAL_DATA(_Adapter)->InterfaceSel)
@@ -751,6 +774,7 @@ typedef struct hal_com_data HAL_DATA_TYPE, *PHAL_DATA_TYPE;
 #define get_hal_mac_addr(adapter)				(GET_HAL_DATA(adapter)->EEPROMMACAddr)
 #define is_boot_from_eeprom(adapter)			(GET_HAL_DATA(adapter)->EepromOrEfuse)
 #define rtw_get_hw_init_completed(adapter)		(GET_HAL_DATA(adapter)->hw_init_completed)
+#define rtw_set_hw_init_completed(adapter, cmp)	(GET_HAL_DATA(adapter)->hw_init_completed = cmp)
 #define rtw_is_hw_init_completed(adapter)		(GET_HAL_DATA(adapter)->hw_init_completed == _TRUE)
 #endif
 
@@ -1000,18 +1024,29 @@ int rtw_halmac_deinit_adapter(struct dvobj_priv *);
 #define REG_APK	rAPK
 #define REG_ANTSEL_SW_JAGUAR	r_ANTSEL_SW_Jaguar
 
-
-
 #define rf_welut_jaguar	RF_WeLut_Jaguar
 #define rf_mode_table_addr	RF_ModeTableAddr
 #define rf_mode_table_data0	RF_ModeTableData0
 #define rf_mode_table_data1	RF_ModeTableData1
 
-
-
-
-
-
 #define RX_SMOOTH_FACTOR	Rx_Smooth_Factor
+
+#if defined(CONFIG_RESUME_IN_WORKQUEUE) || defined(CONFIG_HAS_EARLYSUSPEND)
+int rtw_resume_process(_adapter *padapter);
+#endif
+#ifdef CONFIG_ANDROID_POWER
+#if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI) || defined(CONFIG_GSPI_HCI)
+int rtw_resume_process(PADAPTER padapter);
+#endif
+#endif
+#ifdef CONFIG_AUTOSUSPEND
+void autosuspend_enter(_adapter* padapter);
+int autoresume_enter(_adapter* padapter);
+#endif
+
+#ifdef SUPPORT_HW_RFOFF_DETECTED
+int rtw_hw_suspend(_adapter *padapter );
+int rtw_hw_resume(_adapter *padapter);
+#endif
 
 #endif /* __HAL_DATA_H__ */

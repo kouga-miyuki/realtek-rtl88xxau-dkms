@@ -20,7 +20,7 @@
 #if (RTL8814A_SUPPORT == 1)
 static BOOLEAN
 CheckPositive(
-	struct PHY_DM_STRUCT    *pDM_Odm,
+	struct dm_struct    *pDM_Odm,
 	u32  Condition1,
 	u32  Condition2,
 	u32  Condition3,
@@ -102,7 +102,7 @@ u4Byte    driver3 = 0;
 }
 static BOOLEAN
 CheckNegative(
-	struct PHY_DM_STRUCT    *pDM_Odm,
+	struct dm_struct    *pDM_Odm,
 	u32  Condition1,
 	u32  Condition2
 )
@@ -1187,7 +1187,7 @@ u4Byte Array_MP_8814A_RadioA[] = {
 
 void
 odm_read_and_config_mp_8814a_radioa(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i         = 0;
@@ -2230,7 +2230,7 @@ u4Byte Array_MP_8814A_RadioB[] = {
 
 void
 odm_read_and_config_mp_8814a_radiob(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i         = 0;
@@ -3276,7 +3276,7 @@ u4Byte Array_MP_8814A_RadioC[] = {
 
 void
 odm_read_and_config_mp_8814a_radioc(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i         = 0;
@@ -4324,7 +4324,7 @@ u4Byte Array_MP_8814A_RadioD[] = {
 
 void
 odm_read_and_config_mp_8814a_radiod(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i         = 0;
@@ -4445,10 +4445,10 @@ u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_8814A[] = {0, 0, 1, 1, 2, 2,
 
 void
 odm_read_and_config_mp_8814a_txpowertrack(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
-	struct odm_rf_calibration_structure  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
+	struct dm_rf_calibration_struct  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
 
 	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8814A\n"));
 
@@ -4544,10 +4544,10 @@ u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_Type0_8814A[] = {0, 0, 1, 1,
 
 void
 odm_read_and_config_mp_8814a_txpowertrack_type0(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
-	struct odm_rf_calibration_structure  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
+	struct dm_rf_calibration_struct  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
 
 	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8814A\n"));
 
@@ -4643,10 +4643,10 @@ u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_Type2_8814A[] = {0, 0, 1, 2,
 
 void
 odm_read_and_config_mp_8814a_txpowertrack_type2(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
-	struct odm_rf_calibration_structure  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
+	struct dm_rf_calibration_struct  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
 
 	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8814A\n"));
 
@@ -4742,10 +4742,10 @@ u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_Type5_8814A[] = {0, 1, 1, 2,
 
 void
 odm_read_and_config_mp_8814a_txpowertrack_type5(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
-	struct odm_rf_calibration_structure  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
+	struct dm_rf_calibration_struct  *  prf_calibrate_info = &(pDM_Odm->rf_calibrate_info);
 
 	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8814A\n"));
 
@@ -5759,7 +5759,7 @@ const char *Array_MP_8814A_TXPWR_LMT[] = {
 
 void
 odm_read_and_config_mp_8814a_txpwr_lmt(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i           = 0;
@@ -6775,7 +6775,7 @@ const char *Array_MP_8814A_TXPWR_LMT_type2[] = {
 
 void
 odm_read_and_config_mp_8814a_txpwr_lmt_type2(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i           = 0;
@@ -7791,7 +7791,7 @@ const char *Array_MP_8814A_TXPWR_LMT_Type3[] = {
 
 void
 odm_read_and_config_mp_8814a_txpwr_lmt_type3(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i           = 0;
@@ -8807,7 +8807,7 @@ const char *Array_MP_8814A_TXPWR_LMT_Type5[] = {
 
 void
 odm_read_and_config_mp_8814a_txpwr_lmt_type5(
-	struct	PHY_DM_STRUCT *  pDM_Odm
+	struct	dm_struct *  pDM_Odm
 )
 {
 	u4Byte     i           = 0;

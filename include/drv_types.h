@@ -79,6 +79,7 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_xmit.h>
 #include <xmit_osdep.h>
 #include <rtw_recv.h>
+#include <rtw_rm.h>
 
 #ifdef CONFIG_BEAMFORMING
 	#include <rtw_beamforming.h>
@@ -107,6 +108,9 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_mlme_ext.h>
 #include <rtw_mi.h>
 #include <rtw_ap.h>
+#ifdef CONFIG_RTW_MESH
+#include "../core/mesh/rtw_mesh.h"
+#endif
 #include <rtw_efuse.h>
 #include <rtw_version.h>
 #include <rtw_odm.h>
@@ -145,9 +149,7 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_android.h>
 
 #include <rtw_btcoex_wifionly.h>
-#ifdef CONFIG_BT_COEXIST
-	#include <rtw_btcoex.h>
-#endif /* CONFIG_BT_COEXIST */
+#include <rtw_btcoex.h>
 
 #ifdef CONFIG_MCC_MODE
 	#include <rtw_mcc.h>
@@ -333,7 +335,6 @@ struct registry_priv {
 	u8	RegEnableTxPowerLimit;
 #endif
 	u8	RegEnableTxPowerByRate;
-	u8	RegTxPowerIndexOverride;
 
 	u8 target_tx_pwr_valid;
 	s8 target_tx_pwr_2g[RF_PATH_MAX][RATE_SECTION_NUM];
@@ -352,6 +353,10 @@ struct registry_priv {
 	u8  check_fw_ps;
 	u8	RegPwrTrimEnable;
 
+#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
+	u8	load_phy_file;
+	u8	RegDecryptCustomFile;
+#endif
 #ifdef CONFIG_CONCURRENT_MODE
 	u8 virtual_iface_num;
 #endif
@@ -395,11 +400,7 @@ struct registry_priv {
 	u32 rtw_mcc_sta_bw80_target_tx_tp;
 	s8 rtw_mcc_policy_table_idx;
 	u8 rtw_mcc_duration;
-	u8 rtw_mcc_tsf_sync_offset;
-	u8 rtw_mcc_start_time_offset;
-	u8 rtw_mcc_interval;
-	s8 rtw_mcc_guard_offset0;
-	s8 rtw_mcc_guard_offset1;
+	u8 rtw_mcc_enable_runtime_duration;
 #endif /* CONFIG_MCC_MODE */
 
 #ifdef CONFIG_RTW_NAPI
@@ -424,6 +425,7 @@ struct registry_priv {
 	u32 pci_aspm_config;
 
 	u8 iqk_fw_offload;
+	u8 ch_switch_offload;
 
 #ifdef CONFIG_TDLS
 	u8 en_tdls;
@@ -436,9 +438,12 @@ struct registry_priv {
 #ifdef CONFIG_FW_OFFLOAD_PARAM_INIT
 	u8 fw_param_init;
 #endif
-
-#ifdef CONFIG_LED_CONTROL
-  u8 led_enable;
+#ifdef CONFIG_DYNAMIC_SOML
+	u8 dyn_soml_en;
+	u8 dyn_soml_train_num;
+	u8 dyn_soml_interval;
+	u8 dyn_soml_period;
+	u8 dyn_soml_delay;
 #endif
 };
 
@@ -768,6 +773,18 @@ struct macid_ctl_t {
 	u32 rate_bmp1[MACID_NUM_SW_LIMIT];
 
 	struct sta_info *sta[MACID_NUM_SW_LIMIT]; /* corresponding stainfo when macid is not shared */
+
+	/* macid sleep registers */
+	u16 reg_sleep_m0;
+#if (MACID_NUM_SW_LIMIT > 32)
+	u16 reg_sleep_m1;
+#endif
+#if (MACID_NUM_SW_LIMIT > 64)
+	u16 reg_sleep_m2;
+#endif
+#if (MACID_NUM_SW_LIMIT > 96)
+	u16 reg_sleep_m3;
+#endif
 };
 
 /* used for rf_ctl_t.rate_bmp_cck_ofdm */
@@ -815,12 +832,20 @@ struct macid_ctl_t {
 #define TXPWR_LMT_HAS_OFDM_3T	BIT6
 #define TXPWR_LMT_HAS_OFDM_4T	BIT7
 
+#define OFFCHS_NONE			0
+#define OFFCHS_LEAVING_OP	1
+#define OFFCHS_LEAVE_OP		2
+#define OFFCHS_BACKING_OP	3
+
 struct rf_ctl_t {
 	const struct country_chplan *country_ent;
 	u8 ChannelPlan;
 	u8 max_chan_nums;
 	RT_CHANNEL_INFO channel_set[MAX_CHANNEL_NUM];
 	struct p2p_channels channel_list;
+
+	_mutex offch_mutex;
+	u8 offch_state;
 
 	/* used for debug or by tx power limit */
 	u16 rate_bmp_cck_ofdm;		/* 20MHz */
@@ -846,6 +871,8 @@ struct rf_ctl_t {
 	#endif
 #endif
 
+	u8 ch_sel_same_band_prefer;
+
 #ifdef CONFIG_DFS_MASTER
 	bool radar_detect_by_others;
 	u8 dfs_master_enabled;
@@ -857,6 +884,7 @@ struct rf_ctl_t {
 
 	systime cac_start_time;
 	systime cac_end_time;
+	u8 cac_force_stop;
 
 	u8 dfs_ch_sel_d_flags;
 
@@ -867,9 +895,15 @@ struct rf_ctl_t {
 };
 
 #define RTW_CAC_STOPPED 0
+#ifdef CONFIG_DFS_MASTER
 #define IS_CAC_STOPPED(rfctl) ((rfctl)->cac_end_time == RTW_CAC_STOPPED)
-#define IS_CH_WAITING(rfctl) (!IS_CAC_STOPPED(rfctl) && time_after((rfctl)->cac_end_time, rtw_get_current_time()))
-#define IS_UNDER_CAC(rfctl) (IS_CH_WAITING(rfctl) && time_after(rtw_get_current_time(), (rfctl)->cac_start_time))
+#define IS_CH_WAITING(rfctl) (!IS_CAC_STOPPED(rfctl) && rtw_time_after((rfctl)->cac_end_time, rtw_get_current_time()))
+#define IS_UNDER_CAC(rfctl) (IS_CH_WAITING(rfctl) && rtw_time_after(rtw_get_current_time(), (rfctl)->cac_start_time))
+#else
+#define IS_CAC_STOPPED(rfctl) 1
+#define IS_CH_WAITING(rfctl) 0
+#define IS_UNDER_CAC(rfctl) 0
+#endif /* CONFIG_DFS_MASTER */
 
 #ifdef CONFIG_MBSSID_CAM
 #define TOTAL_MBID_CAM_NUM	8
@@ -991,7 +1025,7 @@ struct dvobj_priv {
 	struct rtw_traffic_statistics	traffic_stat;
 
 #ifdef PLATFORM_LINUX
-	void * rtnl_lock_holder;
+	_thread_hdl_ rtnl_lock_holder;
 
 	#if defined(CONFIG_IOCTL_CFG80211) && defined(RTW_SINGLE_WIPHY)
 	struct wiphy *wiphy;
@@ -1002,7 +1036,7 @@ struct dvobj_priv {
 	_timer txbcn_timer;
 #endif
 	_timer dynamic_chk_timer; /* dynamic/periodic check timer */
-
+	
 #ifdef CONFIG_RTW_NAPI_DYNAMIC
 	u8 en_napi_dynamic;
 #endif /* CONFIG_RTW_NAPI_DYNAMIC */
@@ -1066,7 +1100,7 @@ struct dvobj_priv {
 	WCHAR			active_path[MAX_ACTIVE_REG_PATH];	/* adapter regpath */
 	USB_EXTENSION	usb_extension;
 
-	struct net_device *pipehdls_r8192c[0x10];
+	_nic_hdl		pipehdls_r8192c[0x10];
 #endif
 
 	u32	config_descriptor_len;/* ULONG UsbConfigurationDescriptorLength; */
@@ -1144,6 +1178,7 @@ struct dvobj_priv {
 #define DEV_STA_LG_NUM(_dvobj)		MSTATE_STA_LG_NUM(&((_dvobj)->iface_state))
 #define DEV_TDLS_LD_NUM(_dvobj)		MSTATE_TDLS_LD_NUM(&((_dvobj)->iface_state))
 #define DEV_AP_NUM(_dvobj)			MSTATE_AP_NUM(&((_dvobj)->iface_state))
+#define DEV_AP_STARTING_NUM(_dvobj)	MSTATE_AP_STARTING_NUM(&((_dvobj)->iface_state))
 #define DEV_AP_LD_NUM(_dvobj)		MSTATE_AP_LD_NUM(&((_dvobj)->iface_state))
 #define DEV_ADHOC_NUM(_dvobj)		MSTATE_ADHOC_NUM(&((_dvobj)->iface_state))
 #define DEV_ADHOC_LD_NUM(_dvobj)	MSTATE_ADHOC_LD_NUM(&((_dvobj)->iface_state))
@@ -1257,7 +1292,7 @@ struct proxim {
 #ifdef CONFIG_MAC_LOOPBACK_DRIVER
 typedef struct loopbackdata {
 	_sema	sema;
-	void * lbkthread;
+	_thread_hdl_ lbkthread;
 	u8 bstop;
 	u32 cnt;
 	u16 size;
@@ -1290,6 +1325,10 @@ struct _ADAPTER {
 	struct	mlme_ext_priv mlmeextpriv;
 	struct	cmd_priv	cmdpriv;
 	struct	evt_priv	evtpriv;
+
+#ifdef CONFIG_RTW_80211K
+	struct	rm_priv		rmpriv;
+#endif
 	/* struct	io_queue	*pio_queue; */
 	struct	io_priv	iopriv;
 	struct	xmit_priv	xmitpriv;
@@ -1298,10 +1337,6 @@ struct _ADAPTER {
 	struct	security_priv	securitypriv;
 	_lock   security_key_mutex; /* add for CONFIG_IEEE80211W, none 11w also can use */
 	struct	registry_priv	registrypriv;
-#ifdef CONFIG_RTW_LED
-	struct	led_priv	ledpriv;
-#endif
-
 
 #ifdef CONFIG_RTW_NAPI
 	struct	napi_struct napi;
@@ -1370,15 +1405,15 @@ struct _ADAPTER {
 		void (*callback[8])(u8 level);
 	} gpiointpriv;
 #endif
-	void *cmdThread;
+	_thread_hdl_ cmdThread;
 #ifdef CONFIG_EVENT_THREAD_MODE
-	void *evtThread;
+	_thread_hdl_ evtThread;
 #endif
 #ifdef CONFIG_XMIT_THREAD_MODE
-	void *xmitThread;
+	_thread_hdl_ xmitThread;
 #endif
 #ifdef CONFIG_RECV_THREAD_MODE
-	void *recvThread;
+	_thread_hdl_ recvThread;
 #endif
 	u8 registered;
 #ifndef PLATFORM_LINUX
@@ -1401,12 +1436,12 @@ struct _ADAPTER {
 
 
 #ifdef PLATFORM_LINUX
-	struct net_device *pnetdev;
+	_nic_hdl pnetdev;
 	char old_ifname[IFNAMSIZ];
 
 	/* used by rtw_rereg_nd_name related function */
 	struct rereg_nd_name_data {
-		struct net_device *old_pnetdev;
+		_nic_hdl old_pnetdev;
 		char old_ifname[IFNAMSIZ];
 		u8 old_ips_mode;
 		u8 old_bRegUseLed;
@@ -1436,7 +1471,7 @@ struct _ADAPTER {
 #endif /* PLATFORM_LINUX */
 
 #ifdef PLATFORM_FREEBSD
-	struct net_device *pifp;
+	_nic_hdl pifp;
 	int bup;
 	_lock glock;
 #endif /* PLATFORM_FREEBSD */
@@ -1545,6 +1580,16 @@ struct _ADAPTER {
 #ifdef CONFIG_MCC_MODE
 	struct mcc_adapter_priv mcc_adapterpriv;
 #endif /* CONFIG_MCC_MODE */
+
+#ifdef CONFIG_RTW_MESH
+	struct rtw_mesh_cfg mesh_cfg;
+	struct rtw_mesh_info mesh_info;
+	_timer mesh_path_timer;
+	_timer mesh_path_root_timer;
+	_timer mesh_atlm_param_req_timer; /* airtime link metrics param request timer */
+	_workitem mesh_work;
+	unsigned long wrkq_flags;
+#endif /* CONFIG_RTW_MESH */
 };
 
 #define adapter_to_dvobj(adapter) ((adapter)->dvobj)
@@ -1558,6 +1603,7 @@ struct _ADAPTER {
 #endif
 
 #define adapter_to_rfctl(adapter) dvobj_to_rfctl(adapter_to_dvobj((adapter)))
+#define adapter_to_macidctl(adapter) dvobj_to_macidctl(adapter_to_dvobj((adapter)))
 
 #define adapter_mac_addr(adapter) (adapter->mac_addr)
 #define adapter_to_chset(adapter) (adapter_to_rfctl((adapter))->channel_set)
