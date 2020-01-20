@@ -49,7 +49,7 @@ CONFIG_USB_HCI = y
 CONFIG_LED_CONTROL = y
 CONFIG_LED_ENABLE = y
 ########################## Features ###########################
-CONFIG_NET_NS = n
+CONFIG_NET_NS = y
 CONFIG_IPV6_DISABLE = n
 CONFIG_MP_INCLUDED = y
 CONFIG_CONCURRENT_MODE = n
@@ -79,7 +79,7 @@ CONFIG_WIFI_MONITOR = y
 # Otherwise some channels may be  flagged 'NO-IR' (i.e. Passive scanning) by the driver.
 # Please check your country's regulatory domain first,
 # to see whether active scanning is permitted by law/regulations on the desired channels.
-CONFIG_DISABLE_REGD_C=y
+CONFIG_DISABLE_REGD_C = y
 CONFIG_MCC_MODE = n
 CONFIG_APPEND_VENDOR_IE_ENABLE = n
 CONFIG_RTW_NAPI = y
