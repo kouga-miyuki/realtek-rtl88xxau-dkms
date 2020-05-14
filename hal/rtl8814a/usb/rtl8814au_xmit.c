@@ -125,37 +125,15 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 		SET_TX_DESC_SEQ_8814A(ptxdesc, pattrib->seqnum);
 	}
 
-	/* injected frame */
-        if (pattrib->inject == 0xa5) {
-                SET_TX_DESC_RETRY_LIMIT_ENABLE_8814A(ptxdesc, 1);
-                if (pattrib->retry_ctrl == _TRUE) {
-                        SET_TX_DESC_DATA_RETRY_LIMIT_8814A(ptxdesc, 6);
-                } else {
-                        SET_TX_DESC_DATA_RETRY_LIMIT_8814A(ptxdesc, 0);
-                }
-                if (pattrib->sgi == _TRUE) {
-                        SET_TX_DESC_DATA_SHORT_8814A(ptxdesc, 1);
-                } else {
-                        SET_TX_DESC_DATA_SHORT_8814A(ptxdesc, 0);
-                }
-                SET_TX_DESC_USE_RATE_8814A(ptxdesc, 1);
-                SET_TX_DESC_TX_RATE_8814A(ptxdesc, MRateToHwRate(pattrib->rate));
-                if (pattrib->ldpc) {
-                        SET_TX_DESC_DATA_LDPC_8814A(ptxdesc, 1);
-                } else {
-                        SET_TX_DESC_DATA_LDPC_8814A(ptxdesc, 0);
-                }
-                SET_TX_DESC_DATA_STBC_8814A(ptxdesc, pattrib->stbc & 3);
-                SET_TX_DESC_DATA_BW_8814A(ptxdesc, pattrib->bwmode); // 0 - 20 MHz, 1 - 40 MHz, 2 - 80 MHz
-        	}
 
-		else if ((pxmitframe->frame_tag&0x0f) == DATA_FRAMETAG) {
+
+	if ((pxmitframe->frame_tag&0x0f) == DATA_FRAMETAG) {
 		//RTW_INFO("pxmitframe->frame_tag == DATA_FRAMETAG\n");
 
 		rtl8814a_fill_txdesc_sectype(pattrib, ptxdesc);
 
 		//offset 20
-		}
+
 #ifdef CONFIG_USB_TX_AGGREGATION
 		if (pxmitframe->agg_num > 1){
 			//RTW_INFO("%s agg_num:%d\n",__FUNCTION__,pxmitframe->agg_num );
@@ -246,8 +224,8 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 
 			SET_TX_DESC_TX_RATE_8814A(ptxdesc, MRateToHwRate(pmlmeext->tx_rate));
 		}
-
-		if ((pxmitframe->frame_tag&0x0f)== MGNT_FRAMETAG) {
+	}
+	else if ((pxmitframe->frame_tag&0x0f)== MGNT_FRAMETAG) {
 		//RTW_INFO("pxmitframe->frame_tag == MGNT_FRAMETAG\n");
 
 		SET_TX_DESC_USE_RATE_8814A(ptxdesc, 1);
@@ -264,6 +242,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			SET_TX_DESC_TX_RATE_8814A(ptxdesc, MRateToHwRate(pattrib->rate));
 		}
 
+#ifdef CONFIG_BEAMFORMING
 		// VHT NDPA or HT NDPA Packet for Beamformer.
 		if ((pattrib->subtype == WIFI_NDPA) ||
 			((pattrib->subtype == WIFI_ACTION_NOACK) && (pattrib->order == 1)))
@@ -287,12 +266,13 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			}
 		}
 		else
+#endif
 		{
 			SET_TX_DESC_RETRY_LIMIT_ENABLE_8814A(ptxdesc, 1);
 			if (pattrib->retry_ctrl == _TRUE) {
 				SET_TX_DESC_DATA_RETRY_LIMIT_8814A(ptxdesc, 6);
 			} else {
-				SET_TX_DESC_DATA_RETRY_LIMIT_8814A(ptxdesc, 12);
+				SET_TX_DESC_DATA_RETRY_LIMIT_8814A(ptxdesc, 0);
 			}
 		}
 

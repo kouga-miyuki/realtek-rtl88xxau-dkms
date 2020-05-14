@@ -15,6 +15,8 @@
 #ifndef	__ODM_RTL8821A_H__
 #define __ODM_RTL8821A_H__
 
+s8 phydm_cck_rssi_8821a(struct dm_struct *dm, u16 lna_idx, u8 vga_idx);
+
 void
 phydm_set_ext_band_switch_8821A(
 	void		*dm_void,
