@@ -16,6 +16,10 @@
 #define __OSDEP_LINUX_SERVICE_H_
 
 #include <linux/version.h>
+#ifndef RHEL_RELEASE_CODE
+#define RHEL_RELEASE_VERSION(a,b) (((a) << 8) + (b))
+#define RHEL_RELEASE_CODE 0
+#endif
 #include <linux/spinlock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
@@ -93,10 +97,6 @@
 	#include <net/cfg80211.h>
 #endif /* CONFIG_IOCTL_CFG80211 */
 
-#ifdef CONFIG_TCP_CSUM_OFFLOAD_TX
-	#include <linux/in.h>
-	#include <linux/udp.h>
-#endif
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 	#include <linux/earlysuspend.h>
@@ -127,7 +127,7 @@
 	typedef struct urb   *PURB;
 	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 22))
 		#ifdef CONFIG_USB_SUSPEND
-			#define CONFIG_AUTOSUSPEND	1
+			#define CONFIG_AUTOSUSPEND	0
 		#endif
 	#endif
 #endif
