@@ -1,6 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rtl8812au
 Source: https://github.com/aircrack-ng/rtl8812au
+Comment: dkms package built during installation
 
 Files: *
 Copyright: 2007-2017 Realtek Corporation
