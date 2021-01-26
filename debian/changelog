@@ -1,3 +1,10 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20210118-0kali1) kali-dev; urgency=medium
+
+  * New upstream version 5.6.4.2~git20210118
+  * Refresh patches
+
+ -- Sophie Brun <sophie@offensive-security.com>  Tue, 26 Jan 2021 16:30:25 +0100
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20200916-0kali1) kali-dev; urgency=medium
 
   * New upstream version 5.6.4.2~git20200916
