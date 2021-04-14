@@ -1,4 +1,4 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rtl8812au
 Source: https://github.com/aircrack-ng/rtl8812au
 Comment: dkms package built during installation
@@ -14,7 +14,7 @@ Copyright: 2015 Herbert Xu <herbert@gondor.apana.org.au>
 License: GPL-2
 
 Files: debian/*
-Copyright: 2017-2019 Offensive Security
+Copyright: 2017-2021 Offensive Security
 License: GPL-2
 
 License: GPL-2
