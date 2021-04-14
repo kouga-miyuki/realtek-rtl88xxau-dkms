@@ -1,3 +1,12 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20210327.c0ce817-0kali1) kali-dev; urgency=medium
+
+  * Update debian/watch
+  * Update debian/copyright
+  * New upstream version 5.6.4.2~git20210327.c0ce817
+  * Refresh patches
+
+ -- Sophie Brun <sophie@offensive-security.com>  Wed, 14 Apr 2021 11:24:59 +0200
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20210118-0kali1) kali-dev; urgency=medium
 
   * New upstream version 5.6.4.2~git20210118
