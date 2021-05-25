@@ -1,3 +1,11 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20210327.c0ce817-0kali2) kali-dev; urgency=medium
+
+  * Improve version management in dkms.conf
+  * Bump Standards-Version and use debhelper-compat 13
+  * Add Depends: realtek-rtl8814au-dkms
+
+ -- Sophie Brun <sophie@offensive-security.com>  Tue, 25 May 2021 14:26:03 +0200
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20210327.c0ce817-0kali1) kali-dev; urgency=medium
 
   * Update debian/watch
