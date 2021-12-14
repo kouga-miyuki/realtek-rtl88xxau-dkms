@@ -1,3 +1,14 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20211212.3a6402e-0kali1) kali-dev; urgency=medium
+
+  [ Ben Wilson ]
+  * Update email address
+
+  [ Sophie Brun ]
+  * New upstream version 5.6.4.2~git20211212.3a6402e
+  * Refresh patches
+
+ -- Sophie Brun <sophie@offensive-security.com>  Tue, 14 Dec 2021 17:44:37 +0100
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20210627.b8167e6-0kali1) kali-dev; urgency=medium
 
   * New upstream version 5.6.4.2~git20210627.b8167e6
