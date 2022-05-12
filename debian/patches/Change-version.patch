@@ -7,13 +7,13 @@ Subject: Change version
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dkms.conf b/dkms.conf
-index 34a12b5..42ffd50 100644
+index 0a4462b..5e4f32d 100644
 --- a/dkms.conf
 +++ b/dkms.conf
 @@ -1,5 +1,5 @@
  PACKAGE_NAME="realtek-rtl88xxau"
--PACKAGE_VERSION="5.6.4.2~20211212"
-+PACKAGE_VERSION="5.6.4.2~git20211212.3a6402e"
+-PACKAGE_VERSION="5.6.4.2~20220405"
++PACKAGE_VERSION="5.6.4.2_git20220305.37e27f9"
  CLEAN="'make' clean"
  BUILT_MODULE_NAME[0]=88XXau
  PROCS_NUM=`nproc`
