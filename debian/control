@@ -3,7 +3,7 @@ Section: contrib/kernel
 Priority: optional
 Maintainer: Kali Developers <devel@kali.org>
 Uploaders: Sophie Brun <sophie@offensive-security.com>
-Build-Depends: debhelper-compat (= 13), dkms, dh-exec
+Build-Depends: debhelper-compat (= 13), dkms
 Standards-Version: 4.6.0
 Homepage: https://github.com/aircrack-ng/rtl8812au
 Vcs-Browser: https://gitlab.com/kalilinux/packages/realtek-rtl88xxau-dkms

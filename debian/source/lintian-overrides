@@ -1,2 +1,0 @@
-#we export the variable provided by /usr/share/dpkg/pkg-info.mk
-dh-exec-subst-unknown-variable debian/realtek-rtl88xxau-dkms.install*
