@@ -6,9 +6,8 @@ Uploaders: Sophie Brun <sophie@offensive-security.com>
 Build-Depends: debhelper-compat (= 13), dkms, dh-exec
 Standards-Version: 4.6.0
 Homepage: https://github.com/aircrack-ng/rtl8812au
-Vcs-Git: https://gitlab.com/kalilinux/packages/realtek-rtl88xxau-dkms.git
 Vcs-Browser: https://gitlab.com/kalilinux/packages/realtek-rtl88xxau-dkms
-
+Vcs-Git: https://gitlab.com/kalilinux/packages/realtek-rtl88xxau-dkms.git
 
 Package: realtek-rtl88xxau-dkms
 Architecture: all
