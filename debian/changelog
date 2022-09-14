@@ -194,4 +194,3 @@ realtek-rtl88xxau-dkms (4.3.21~20170330-0kali1) kali-dev; urgency=low
   * Initial release
 
  -- Sophie Brun <sophie@offensive-security.com>  Tue, 04 Apr 2017 11:13:04 +0200
-
