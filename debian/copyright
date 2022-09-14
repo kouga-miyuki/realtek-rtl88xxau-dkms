@@ -10,7 +10,7 @@ License: GPL-2
 Files: os_dep/linux/rhashtable.*
 Copyright: 2015 Herbert Xu <herbert@gondor.apana.org.au>
            2014-2015 Thomas Graf <tgraf@suug.ch>
-	   2008-2014 Patrick McHardy <kaber@trash.net>
+           2008-2014 Patrick McHardy <kaber@trash.net>
 License: GPL-2
 
 Files: debian/*
