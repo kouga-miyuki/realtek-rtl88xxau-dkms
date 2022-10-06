@@ -6,8 +6,8 @@ EXTRA_CFLAGS += -Wno-unused-label
 #EXTRA_CFLAGS += -Wno-unused-parameter
 EXTRA_CFLAGS += -Wno-unused-function
 EXTRA_CFLAGS += -Wno-implicit-fallthrough
-EXTRA_CFLAGS += -Wno-cast-function-type
-EXTRA_CFLAGS += -Wno-error=cast-function-type
+#EXTRA_CFLAGS += -Wno-cast-function-type
+#EXTRA_CFLAGS += -Wno-error=cast-function-type
 #EXTRA_CFLAGS += -Wno-parentheses-equality
 #EXTRA_CFLAGS += -Wno-pointer-bool-conversion
 EXTRA_CFLAGS += -Wno-unknown-pragmas
@@ -68,6 +68,8 @@ CONFIG_RTW_REPEATER_SON = n
 CONFIG_RTW_WIFI_HAL = n
 CONFIG_ICMP_VOQ = n
 CONFIG_IP_R_MONITOR = n #arp VOQ and high rate
+# disable virtual intf for openwrt 21.02
+CONFIG_RTW_VIRTUAL_INTF = n
 ########################## Debug ###########################
 CONFIG_RTW_DEBUG = n
 # default log level is _DRV_INFO_ = 4,
@@ -1136,6 +1138,10 @@ EXTRA_CFLAGS += -DRTW_LOG_LEVEL=$(CONFIG_RTW_LOG_LEVEL)
 endif
 
 EXTRA_CFLAGS += -DDM_ODM_SUPPORT_TYPE=0x04
+
+ifeq ($(CONFIG_RTW_VIRTUAL_INTF), y)
+EXTRA_CFLAGS += -DRTW_VIRTUAL_INTF=1
+endif
 
 ifeq ($(CONFIG_PLATFORM_I386_PC), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
