@@ -1,3 +1,22 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20220827.e7a4a39-0kali1) kali-dev; urgency=medium
+
+  [ Arnaud Rebillout ]
+  * No more dh-exec (requires compat 13)
+  * Switch to dh-sequence-dkms
+  * Set PACKAGE_VERSION in override_dh_dkms
+
+  [ Kali Janitor ]
+  * Trim trailing whitespace.
+  * debian/copyright: use spaces rather than tabs to start continuation lines.
+  * Set upstream metadata fields: Bug-Database, Bug-Submit.
+  * Update standards version to 4.6.1, no changes needed.
+  * Set upstream metadata fields: Repository, Repository-Browse.
+
+  [ Sophie Brun ]
+  * New upstream version 5.6.4.2~git20220827.e7a4a39
+
+ -- Sophie Brun <sophie@offensive-security.com>  Thu, 06 Oct 2022 14:22:46 +0200
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20220606.cab4e4e-0kali1) kali-dev; urgency=medium
 
   * New upstream version 5.6.4.2~git20220606.cab4e4e
