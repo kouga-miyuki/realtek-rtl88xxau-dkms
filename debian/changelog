@@ -1,3 +1,18 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20230203.d98018d-0kali1) kali-dev; urgency=medium
+
+  [ Steev Klimaszewski ]
+  * Remove invalid upstream metadata
+
+  [ Kali Janitor ]
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository-Browse.
+  * Set upstream metadata fields: Repository.
+  * Update standards version to 4.6.2, no changes needed.
+
+  [ Sophie Brun ]
+  * New upstream version 5.6.4.2~git20230203.d98018d
+
+ -- Sophie Brun <sophie@offensive-security.com>  Tue, 21 Feb 2023 14:12:18 +0100
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20220827.e7a4a39-0kali1) kali-dev; urgency=medium
 
   [ Arnaud Rebillout ]
