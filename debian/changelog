@@ -1,3 +1,13 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20230703.9dc4a4c-0kali1) kali-dev; urgency=medium
+
+  [ Steev Klimaszewski ]
+  * Override dkms autopkgtest
+
+  [ Sophie Brun ]
+  * New upstream version 5.6.4.2~git20230703.9dc4a4c
+
+ -- Sophie Brun <sophie@offensive-security.com>  Wed, 05 Jul 2023 16:57:07 +0200
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20230203.d98018d-0kali1) kali-dev; urgency=medium
 
   [ Steev Klimaszewski ]
