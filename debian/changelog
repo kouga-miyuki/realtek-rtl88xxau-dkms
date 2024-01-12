@@ -1,3 +1,9 @@
+realtek-rtl88xxau-dkms (5.6.4.2~git20231117.a3e0c0b-0kali1) kali-dev; urgency=medium
+
+  * New upstream version 5.6.4.2~git20231117.a3e0c0b for kernel 6.6.*
+
+ -- Sophie Brun <sophie@offensive-security.com>  Fri, 12 Jan 2024 16:24:00 +0100
+
 realtek-rtl88xxau-dkms (5.6.4.2~git20230703.9dc4a4c-0kali1) kali-dev; urgency=medium
 
   [ Steev Klimaszewski ]
