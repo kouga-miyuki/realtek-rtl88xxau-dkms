@@ -9,6 +9,8 @@ EXTRA_CFLAGS += -Wno-implicit-fallthrough
 EXTRA_CFLAGS += -Wno-cast-function-type
 #EXTRA_CFLAGS += -Wno-error=cast-function-type
 #EXTRA_CFLAGS += -Wno-parentheses-equality
+EXTRA_CFLAGS += -Wno-error=incompatible-pointer-types
+EXTRA_CFLAGS += -Wno-stringop-overread
 #EXTRA_CFLAGS += -Wno-pointer-bool-conversion
 EXTRA_CFLAGS += -Wno-unknown-pragmas
 #EXTRA_CFLAGS += -Wno-unused
@@ -851,6 +853,8 @@ EXTRA_CFLAGS += -DRTW_ENABLE_WIFI_CONTROL_FUNC -DCONFIG_RADIO_WORK
 #EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE
 EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
 EXTRA_CFLAGS += -DCONFIG_P2P_IPS
+# A special rule for cfg80211_connect_bss() to receive all 10 arguments in an Android build
+EXTRA_CFLAGS += -DCONFIG_CFG80211_CONNECT_BSS_ANDROID
 endif
 
 ifeq ($(CONFIG_PLATFORM_ANDROID_X86), y)
