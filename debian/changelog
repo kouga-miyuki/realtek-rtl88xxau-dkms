@@ -1,6 +1,8 @@
 realtek-rtl88xxau-dkms (5.6.4.2~git20240726.63cf0b4-0kali1) kali-dev; urgency=medium
 
-  * New upstream version 5.6.4.2~git20240726.63cf0b4
+  * Revert to upstream commit 63cf0b4 to fix issue:
+     https://github.com/aircrack-ng/rtl8812au/issues/1169
+     https://bugs.kali.org/view.php?id=8833
 
  -- Sophie Brun <sophie@offensive-security.com>  Fri, 26 Jul 2024 15:10:53 +0200
 
